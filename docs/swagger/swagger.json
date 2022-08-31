@@ -3,16 +3,16 @@
     "info": {
         "version": "1.0.0",
         "title": " API",
-        "description": "Women Listed Swagger API DOCS",
+        "description": "IKFL Swagger API DOCS",
         "license": {
-            "name": "Women Listed"
+            "name": "IKFL"
         }
     },
     "host": "",
     "basePath": "/api",
     "tags": [
         {
-            "name": "Women Listed Workspace Server",
+            "name": "IKFL Workspace Server",
             "description": "API for Workspace"
         }
     ],
