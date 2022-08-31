@@ -288,26 +288,15 @@ const getFeature = async (req, res, next) => {
         const rating = req.query.rating;
         let query = req.query;
         if (req.query.category) query['category'] = { $in: req.query.category.split(",") };
-        // if (req.query.minPrice && req.query.maxPrice) query['price'] = {$gte: parseInt(req.query.minPrice), $lte: parseInt(req.query.maxPrice)};
-        // if (query.search) {
-        //     query['$or'] = [
-        //         {name: new RegExp(query.search, "i")},
-        //         {productId: new RegExp(query.search, "i")}
-        //     ];
-        // }
 
-        // delete query.search;
         delete query.pagination;
         delete query.limit;
-
-
-        const productsCount = await ProductFeatureModel.countDocuments(query);
 
         let docs = await ProductFeatureModel.find(query).sort({ createdAt: -1 })
             .limit(limit).skip(pagination * limit)
             .populate('file', 'name original path thumbnail smallFile')
-            .populate('product','_id name')
-        return res.status(200).send({ result: docs, count: productsCount });
+            .populate('product','_id name');
+        return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
     }
@@ -406,9 +395,16 @@ const createcenter = async (req, res, next) => {
             odescription: Joi.string().empty(''),
             obtn_name: Joi.string().empty(''),
             obtn_link: Joi.string().empty(''),
+
+            stitle: Joi.string().empty(''),
+            cttitle: Joi.string().empty(''),
+            ctdescription: Joi.string().empty(''),
+            ltitle: Joi.string().empty(''),
+            ldescription: Joi.string().empty(''),
          
             eligibility: Joi.string().empty(''),
             applyheading: Joi.string().empty(''),
+            lifeinsurance: Joi.string().empty(''),
             files: Joi.array(),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
@@ -482,9 +478,16 @@ const updatecenter = async (req, res, next) => {
             odescription: Joi.string().empty(''),
             obtn_name: Joi.string().empty(''),
             obtn_link: Joi.string().empty(''),
+
+            stitle: Joi.string().empty(''),
+            cttitle: Joi.string().empty(''),
+            ctdescription: Joi.string().empty(''),
+            ltitle: Joi.string().empty(''),
+            ldescription: Joi.string().empty(''),
          
             eligibility: Joi.string().empty(''),
             applyheading: Joi.string().empty(''),
+            lifeinsurance: Joi.string().empty(''),
             files: Joi.array(),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
@@ -525,6 +528,32 @@ const updatecenter = async (req, res, next) => {
 
 
 
+const getProudctDetail = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        delete query.pagination;
+        delete query.limit;
+        let record = { };
+
+        record.product    = await ProductModel.find({status:1, slug:req.params.id }).populate('file', 'name original path thumbnail smallFile').populate('blog', 'name original path thumbnail smallFile').populate('carcass', 'name original path thumbnail smallFile').populate('coverPhoto', 'name original path thumbnail smallFile');
+    
+        record.featureList = await ProductFeatureModel.find({status:1,product:record.product[0]._id}).sort({ sort_order: 1 }).populate('file', 'name original path thumbnail smallFile');
+
+        record.setting = await SettingModel.find(query).sort({ createdAt: -1 })
+        .populate('logo', 'name original path thumbnail smallFile')
+        .populate('footer_logo', 'name original path thumbnail smallFile')
+        .populate('favicon', 'name original path thumbnail smallFile')
+        .populate('default_logo', 'name original path thumbnail smallFile');  
+       
+        return res.status(200).send({ result: record });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
 module.exports = {
     create,
     get,
@@ -537,5 +566,6 @@ module.exports = {
     createcenter,
     updatecenter,
     getcenter,
-    getCustomerSection
+    getCustomerSection,
+    getProudctDetail
 };

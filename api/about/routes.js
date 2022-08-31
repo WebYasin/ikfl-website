@@ -52,4 +52,13 @@ router.post('/reports',            Auth.isAuthenticated(),       AboutController
 router.put('/reports/:id',         Auth.isAuthenticated(),       AboutController.updateReports);
 router.delete('/reports/:id',      Auth.isAuthenticated(),       AboutController.removeReports);
 
+router.get('/gallery',             Auth.isAuthenticated(),       AboutController.getGallery);
+router.post('/gallery',            Auth.isAuthenticated(),       AboutController.createGallery);
+router.put('/gallery/:id',         Auth.isAuthenticated(),       AboutController.updateGallery);
+router.delete('/gallery/:id',      Auth.isAuthenticated(),       AboutController.removeGallery);
+
+
+router.get('/getData',                                          AboutController.getInformationDetail);
+router.get('/getGalleryData',                                   AboutController.getGalleryDetail);
+
 module.exports = router;

@@ -16,15 +16,13 @@ const create = async (req, res, next) => {
             phone: Joi.string().required(),
             email: Joi.string().email().required(),
             product:Joi.string().required(),
-            concern: Joi.string(),
+            concern: Joi.string().empty(''),
             active: Joi.boolean()
         });
 
         const { error } = schema.validate(enquiry);
         if (error) return res.status(400).json({ error });
 
-        enquiry.createdBy = req.user._id;
-        enquiry.updatedBy = req.user._id;
         enquiry = new EnquiryModel(enquiry);
         enquiry = await enquiry.save();
 
@@ -41,11 +39,11 @@ const get = async (req, res, next) => {
     try {
         const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
-        let where = {};
-        if (req.query.id) where._id = req.query.id;
-        else if (req.query.profession_id) where.createdBy = req.query.profession_id;
+        // let where = {};
+        // if (req.query.id) where._id = req.query.id;
+        // else if (req.query.profession_id) where.createdBy = req.query.profession_id;
 
-        let docs = await EnquiryModel.find(where).sort({createdAt: -1}).limit(limit).skip(pagination*limit) .populate('product', 'name');
+        let docs = await EnquiryModel.find().sort({createdAt: -1}).limit(limit).skip(pagination*limit) .populate('product', 'name');
         return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));

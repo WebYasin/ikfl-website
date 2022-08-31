@@ -24,8 +24,8 @@ router.get('/center',                                                   ProductC
 router.put('/center/:id',                  Auth.isAuthenticated(),       ProductController.updatecenter);
 
 
-router.get('/customersection',                                           ProductController.getCustomerSection);
+router.get('/getData',                                           ProductController.getCustomerSection);
 
-
+router.get('/productDetail/:id',                                 ProductController.getProudctDetail);
 
 module.exports = router;

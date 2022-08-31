@@ -33,7 +33,7 @@ router.get('/heading',                                          CareerController
 router.put('/heading/:id',         Auth.isAuthenticated(),       CareerController.updateHeading);
 router.delete('/heading/:id',      Auth.isAuthenticated(),       CareerController.removeHeading);
 
-
+router.get('/getData',                                          CareerController.getCareerData);
 
 
 module.exports = router;

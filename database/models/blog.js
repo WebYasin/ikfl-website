@@ -8,6 +8,7 @@ const BlogSchema = new mongoose.Schema({
     slug: { type: String, required: false, default: "" },
     shortDescription: { type: String, required: false },
     description: { type: String,required: false, default: "" },
+    show_latest: { type: Number,required: false, default: 0 },
     files: { type: objectId, ref: 'File' },
     thumbnail: { type: objectId, ref: 'File' },
     metaTag: { type: String,required: false, default: "" },

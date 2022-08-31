@@ -15,7 +15,6 @@ module.exports = {
     StateModel:                     require('./state'),
     TagsModel:                      require('./tags'),
     UserModel:                      require('./user'),
-    FaqModel:                       require('./faq'),
     BlogModel:                      require('./blog'),
     ContactEnquiryModel:            require('./contactEnquiry'),
     TestimonialModel:               require('./testimonial'),
@@ -50,5 +49,7 @@ module.exports = {
     informationModel:                   require('./informaionmodel'),
     AnnualReportModel:                  require('./annualreportmodel'),
     FaqCategoryModel:                   require('./faqcategorymodel'),
-    FaqModel:                           require('./faqmodel')
+    FaqModel:                           require('./faqmodel'),
+    GalleryModel:                       require('./gallerymodel'),
+    GalleryHeadingModel:                require('./galleryheadingmodel')
 }

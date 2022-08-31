@@ -2,7 +2,11 @@
 
 const modelName                     = 'ContactEnquiry';
 const Joi                           = require('@hapi/joi');
-const { ContactEnquiryModel }       = require('@database');
+const { ContactEnquiryModel,
+    ContactHeadingModel,
+    AddressModel,CenterModel,
+    MetaModel,ProductModel,
+    SettingModel }       = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 
@@ -15,7 +19,7 @@ const create = async (req, res, next) => {
             name: Joi.string().required(),
             phone: Joi.string().required(),
             email: Joi.string().email().required(),
-            concern: Joi.string(),
+            concern: Joi.string().empty(''),
             active: Joi.boolean()
         });
 
@@ -66,8 +70,40 @@ const remove = async (req, res, next) => {
     }
 };
 
+
+const contactDetail = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        delete query.pagination;
+        delete query.limit;
+        let record = { };
+        record.heading = await ContactHeadingModel.find({status:1}).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile');
+        record.addressList = await AddressModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile');
+        record.lifeinsurance = await CenterModel.find({status:1})
+        .populate('attributes.attributeId', 'name')
+        .populate('file', 'name original path thumbnail smallFile')
+        .populate('blog', 'name original path thumbnail smallFile');
+        record.meta = await MetaModel.find({status:1,link:'contact'}).populate('file', 'name original path thumbnail smallFile');
+        record.setting = await SettingModel.find()
+            .populate('logo', 'name original path thumbnail smallFile')
+            .populate('footer_logo', 'name original path thumbnail smallFile')
+            .populate('favicon', 'name original path thumbnail smallFile')
+            .populate('default_logo', 'name original path thumbnail smallFile');
+
+         record.productList = await ProductModel.find({status:1}).sort({ createdAt: -1 });
+        
+        return res.status(200).send({ result: record });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
 module.exports = {
     create,
     get,
-    remove
+    remove,
+    contactDetail
 };

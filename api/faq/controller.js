@@ -2,7 +2,7 @@
 
 const modelName                     = 'Faq';
 const Joi                           = require('@hapi/joi');
-const { FaqModel }                  = require('@database');
+const { FaqModel,CenterModel,SettingModel,MetaModel,FaqCategoryModel }                  = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 
@@ -38,10 +38,39 @@ const get = async (req, res, next) => {
     try {
         const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
-        let where = {};
+        let record = {};
 
-        let docs = await FaqModel.find(where).sort({createdAt: -1}).limit(limit).skip(pagination*limit);
-        return res.status(200).send({ result: docs });
+         record.faqCategory = await FaqCategoryModel.aggregate([
+               
+            { $lookup: {
+                  from: "faqs",
+                  localField: "_id",
+                  foreignField: "category",
+                  as: "faqDetails"
+            }},
+          { $skip: (pagination*limit) },
+          { $sort : { createdAt: -1} },
+          { $limit: limit },
+         
+         ])
+        
+        
+         record.lifeinsurance = await CenterModel.find({status:1}).sort({ createdAt: -1 })
+         .populate('attributes.attributeId', 'name')
+         .populate('file', 'name original path thumbnail smallFile')
+         .populate('blog', 'name original path thumbnail smallFile');
+       
+       
+         record.meta = await MetaModel.find({status:1,link:'faq'}).populate('file', 'name original path thumbnail smallFile');
+      
+         record.setting = await SettingModel.find()
+         .populate('logo', 'name original path thumbnail smallFile')
+         .populate('footer_logo', 'name original path thumbnail smallFile')
+         .populate('favicon', 'name original path thumbnail smallFile')
+         .populate('default_logo', 'name original path thumbnail smallFile');
+      
+      
+         return res.status(200).send({ result: record });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
     }

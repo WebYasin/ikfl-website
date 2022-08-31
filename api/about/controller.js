@@ -15,6 +15,9 @@ const { AboutModel,
     SettingModel,
     MetaModel,
     HomePartnerModel,
+    GalleryHeadingModel,
+    GalleryModel,
+    BlogModel,
     VisionModel }                   = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
@@ -964,6 +967,169 @@ const removeReports = async (req, res, next) => {
         return res.status(400).json(UTILS.errorHandler(error));
     }
 };
+/////////////////////////////
+
+
+
+const createGallery = async (req, res, next) => {
+    let gallery = await FILE_UPLOAD.uploadMultipleFile(req);
+
+    try {
+        const schema = Joi.object({
+            status: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+    
+        const { error } = schema.validate(gallery);
+        if (error) return res.status(400).json({ error });
+
+        if (gallery.files.length) gallery.file = gallery.files.map(file => file._id);
+        else delete gallery.files;
+
+        gallery.createdBy = req.user._id;
+        gallery.updatedBy = req.user._id;
+
+        gallery = new GalleryModel(gallery);
+        gallery = await gallery.save();
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: gallery
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const getGallery = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        if (query.name) query.name = new RegExp(query.name, "i");
+        delete query.pagination;
+        delete query.limit;
+
+        let docs = await GalleryModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const updateGallery = async (req, res, next) => {
+    
+    try {
+        if (!req.params.id) return res.status(400).json({error: "Address id is required"});
+        let team = await FILE_UPLOAD.uploadMultipleFile(req);
+        const schema = Joi.object({
+            status: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+
+        const { error } = schema.validate(req.body);
+        if (error) return res.status(400).json({ error });
+
+        if (team.files.length) team.file = team.files.map(file => file._id);
+        else delete team.files;
+        req.body.updatedBy = req.user._id;
+
+        team = await GalleryModel.updateOne({_id: req.params.id}, {$set: req.body});
+       
+        if (!team) return res.status(400).json({error: "Gallery update failed"});
+        
+        return res.status(201).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "Gallery updated succesfully"
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const removeGallery = async (req, res, next) => {
+    try {
+        const schema = Joi.object({
+            id: Joi.string().required()
+        });
+
+        const { error } = schema.validate(req.params);
+        if (error) return res.status(400).json({ error });
+
+        await GalleryModel.deleteOne({_id: req.params.id});
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "Gallery Deleted succesfully" 
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
+
+
+////////////////////////////////
+
+const getInformationDetail = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        if (query.name) query.name = new RegExp(query.name, "i");
+        delete query.pagination;
+        delete query.limit;
+        let record = { };
+        record.heading = await informationModel.find({status:1}).populate('file', 'name original path thumbnail smallFile');
+        record.annualReports = await AnnualReportModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile');
+        record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
+        .populate('attributes.attributeId', 'name')
+        .populate('file', 'name original path thumbnail smallFile')
+        .populate('blog', 'name original path thumbnail smallFile');
+        record.meta = await MetaModel.find({status:1,link:'corporate-information-center'}).populate('file', 'name original path thumbnail smallFile');
+        record.setting = await SettingModel.find()
+        .populate('logo', 'name original path thumbnail smallFile')
+        .populate('footer_logo', 'name original path thumbnail smallFile')
+        .populate('favicon', 'name original path thumbnail smallFile')
+        .populate('default_logo', 'name original path thumbnail smallFile');
+        return res.status(200).send({ result: record });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
+const getGalleryDetail = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        if (query.name) query.name = new RegExp(query.name, "i");
+        delete query.pagination;
+        delete query.limit;
+        let record = { };
+        record.heading =  await GalleryHeadingModel.find({status:1}).populate('file', 'name original path thumbnail smallFile');
+        record.galleryList = await GalleryModel.find({status:1}).populate('file', 'name original path thumbnail smallFile');
+        record.latestblogs = await BlogModel.find({status:1,show_latest:1}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile').populate('thumbnail', 'name original path thumbnail smallFile');
+       
+        record.lifeinsurance = await CenterModel.find({status:1}).sort({ createdAt: -1 })
+        .populate('attributes.attributeId', 'name')
+        .populate('file', 'name original path thumbnail smallFile')
+        .populate('blog', 'name original path thumbnail smallFile');
+        record.meta = await MetaModel.find({status:1,link:'media'}).populate('file', 'name original path thumbnail smallFile');
+        record.setting = await SettingModel.find()
+        .populate('logo', 'name original path thumbnail smallFile')
+        .populate('footer_logo', 'name original path thumbnail smallFile')
+        .populate('favicon', 'name original path thumbnail smallFile')
+        .populate('default_logo', 'name original path thumbnail smallFile');
+        return res.status(200).send({ result: record });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
 
 module.exports = {
     create,
@@ -998,5 +1164,11 @@ module.exports = {
     getReports,
     createReports,
     updateReports,
-    removeReports
+    removeReports,
+    getInformationDetail,
+    getGallery,
+    createGallery,
+    updateGallery,
+    removeGallery ,
+    getGalleryDetail 
 };

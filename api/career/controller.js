@@ -7,6 +7,9 @@ const {
     WorkingModel,
     CareerBenafitModel,
     EmployeeSpeakModel,
+    MetaModel,
+    SettingModel,
+    CenterModel,
     CareerHeadingModel
  }                 = require('@database');
 const CONSTANT                      = require('@lib/constant');
@@ -567,8 +570,50 @@ const removeHeading = async (req, res, next) => {
         return res.status(400).json(UTILS.errorHandler(error));
     }
 };
+/////////////////////////////
 
 
+const getCareerData = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        delete query.pagination;
+        delete query.limit;
+        let record = { };
+        record.jobsList = await CareerModel.find({status:1}).sort({sort_order: 1})
+        .populate('files', 'name original path thumbnail smallFile');
+
+        record.workingList = await WorkingModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        .populate('file', 'name original path thumbnail smallFile');
+        
+        record.heading = await CareerHeadingModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        .populate('file', 'name original path thumbnail smallFile');
+
+        record.employeeSpeakList = await EmployeeSpeakModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        .populate('file', 'name original path thumbnail smallFile');
+
+        record.benafitsList = await CareerBenafitModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        .populate('file', 'name original path thumbnail smallFile');
+
+        record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
+        .populate('attributes.attributeId', 'name')
+        .populate('file', 'name original path thumbnail smallFile')
+        .populate('blog', 'name original path thumbnail smallFile');
+      
+        record.meta = await MetaModel.find({status:1,link:'careers'}).populate('file', 'name original path thumbnail smallFile');
+      
+        record.setting = await SettingModel.find()
+        .populate('logo', 'name original path thumbnail smallFile')
+        .populate('footer_logo', 'name original path thumbnail smallFile')
+        .populate('favicon', 'name original path thumbnail smallFile')
+        .populate('default_logo', 'name original path thumbnail smallFile');
+
+        return res.status(200).send({ result: record });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
 
 module.exports = {
     create,
@@ -590,5 +635,6 @@ module.exports = {
     createHeading,
     getHeading,
     updateHeading,
-    removeHeading
+    removeHeading,
+    getCareerData
 };

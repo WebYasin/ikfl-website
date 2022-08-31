@@ -6,6 +6,9 @@ const { PolicyModel,
     PolicyCategoryModel,
     ContactHeadingModel,
     FaqModel,
+    CenterModel,
+    SettingModel,
+    MetaModel,
     FaqCategoryModel }                 = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
@@ -570,6 +573,53 @@ const removeFaqs = async (req, res, next) => {
 };
 
 
+const getPolicyData = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        delete query.pagination;
+        delete query.limit;
+        let record = { };
+      
+        // record.policyCategory = await PolicyCategoryModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile').populate('policy');
+        
+        record.policyCategory = await PolicyCategoryModel.aggregate([
+               
+            { $lookup: {
+                  from: "policies",
+                  localField: "_id",
+                  foreignField: "category",
+                  as: "policyDetails"
+            }},
+        //    { "$unwind": "$policyDetails" },
+          { $skip: (pagination*limit) },
+          { $sort : { createdAt: -1} },
+          { $limit: limit },
+         
+         ])
+
+        // record.policyList = await PolicyModel.find({status:1}).sort({sort_order: 1})
+        // .populate('file', 'name original path thumbnail smallFile').populate('category','_id name');
+
+
+      
+        record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
+        .populate('attributes.attributeId', 'name')
+        .populate('file', 'name original path thumbnail smallFile')
+        .populate('blog', 'name original path thumbnail smallFile');
+        record.meta = await MetaModel.find({status:1,link:'policies'}).populate('file', 'name original path thumbnail smallFile');
+        record.setting = await SettingModel.find()
+        .populate('logo', 'name original path thumbnail smallFile')
+        .populate('footer_logo', 'name original path thumbnail smallFile')
+        .populate('favicon', 'name original path thumbnail smallFile')
+        .populate('default_logo', 'name original path thumbnail smallFile');
+        return res.status(200).send({ result: record });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
 ////////////////////////
 module.exports = {
     create,
@@ -591,5 +641,6 @@ module.exports = {
     getFaqs,
     createFaqs,
     updateFaqs,
-    removeFaqs
+    removeFaqs,
+    getPolicyData
 };

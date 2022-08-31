@@ -22,8 +22,15 @@ const CenterSchema = new mongoose.Schema({
     obtn_name: { type: String, required: false },
     obtn_link: { type: String, required: false },
 
+    stitle: { type: String, required: false },
+    cttitle: { type: String, required: false },
+    ctdescription: { type: String, required: false },
+    ltitle: { type: String, required: false },
+    ldescription: { type: String, required: false },
+
     eligibility: { type: String, required: false },
     applyheading: { type: String, required: false },
+    lifeinsurance: { type: String, required: false },
 
     file: { type: objectId, ref: 'File' },
     blog: { type: objectId, ref: 'File' },

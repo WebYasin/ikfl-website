@@ -829,7 +829,7 @@ const update_profile = async (req, res, next) => {
         if (!where) return res.status(400).send({error: "User id is required"});
         
         const schema = Joi.object({
-            userName: Joi.string(),
+            userName: Joi.string().required(),
             email: Joi.string().required(),
             phoneNumber:Joi.number().empty(''),
             role: Joi.string().required(),

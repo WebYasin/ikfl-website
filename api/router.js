@@ -41,4 +41,9 @@ router.use('/career',                    require("./career/routes"));
 router.use('/policy',                    require("./policy/routes"));
 router.use('/setting',                   require("./setting/routes"));
 
+router.use('/contact',                    require("./contactEnquiry/routes"));
+router.use('/informationCenter',                    require("./about/routes"));
+router.use('/customerSection',                    require("./product/routes"));
+router.use('/gallery',                    require("./about/routes"));
+
 module.exports = router;
