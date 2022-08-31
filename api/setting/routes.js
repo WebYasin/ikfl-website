@@ -5,7 +5,7 @@ const { SettingController }         = require('@api/controller');
 const Auth                          = require('@middleware/authorization');
 
 router.post('/',           Auth.isAuthenticated(),       SettingController.create);
-router.get('/',            Auth.isAuthenticated(),       SettingController.get);
+router.get('/',                                          SettingController.get);
 router.put('/:id',         Auth.isAuthenticated(),       SettingController.update);
 router.delete('/:id',      Auth.isAuthenticated(),       SettingController.remove);
 
