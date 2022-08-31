@@ -5,7 +5,7 @@ const { EnquiryController }            = require('@api/controller');
 const Auth                          = require('@middleware/authorization');
 
 router.post('/',                                         EnquiryController.create);
-router.get('/',            Auth.isAuthenticated(),       EnquiryController.get);
+router.get('/',                                          EnquiryController.get);
 router.put('/:id',         Auth.isAuthenticated(),       EnquiryController.update);
 router.delete('/:id',      Auth.isAuthenticated(),       EnquiryController.remove);
 
