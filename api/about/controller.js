@@ -104,6 +104,11 @@ const get = async (req, res, next) => {
 
         record.groupList    = await HomePartnerModel.find({status:1,type:2}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
        
+        record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
+        .populate('attributes.attributeId', 'name')
+        .populate('file', 'name original path thumbnail smallFile')
+        .populate('blog', 'name original path thumbnail smallFile');
+
         record.setting = await SettingModel.find(query).sort({ createdAt: -1 })
         .populate('logo', 'name original path thumbnail smallFile')
         .populate('footer_logo', 'name original path thumbnail smallFile')

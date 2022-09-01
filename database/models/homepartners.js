@@ -4,6 +4,7 @@ const mongoose                  = require('mongoose');
 const objectId                  = mongoose.Schema.Types.ObjectId;
 
 const HomePartnerSchema = new mongoose.Schema({ 
+    name: { type:String, required:false},
     sort_order: { type: Number, required: false },
     files: { type: objectId, ref: 'File' },
     status: { type: Number, default: false },

@@ -536,7 +536,8 @@ const createPartner = async (req, res, next) => {
     
     try {
         const schema = Joi.object({
-            sort_order: Joi.string().empty(''),
+            sort_order: Joi.number().empty(''),
+            name: Joi.string().empty(''),
             files: Joi.array(),
             status: Joi.number().empty(''),
             type: Joi.number().empty(''),
@@ -573,7 +574,8 @@ const updatePartner = async (req, res, next) => {
         let homepartner = await FILE_UPLOAD.uploadMultipleFile(req);
         
         const schema = Joi.object({
-            sort_order: Joi.string().empty(),
+            sort_order: Joi.number().empty(''),
+            name: Joi.string().empty(''),
             files: Joi.array(),
             status: Joi.number().empty(''),
             type: Joi.number().empty(''),
