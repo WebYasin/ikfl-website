@@ -16,7 +16,7 @@ router.post('/validate/email',          Auth.isAuthenticated(),                 
 router.post('/upload/profile',          Auth.isAuthenticated(),                 UserController.uploadProfilePhoto);
 router.post('/upload/cover',            Auth.isAuthenticated(),                 UserController.uploadCoverPhoto);
 router.put('/',                         Auth.isAuthenticated(),                 UserController.update);
- router.put('/update_profile/:id',          Auth.isAuthenticated(),             UserController.update_profile);
+router.put('/update_profile/:id',          Auth.isAuthenticated(),             UserController.update_profile);
 router.get('/logout',                   Auth.isAuthenticated(),                 UserController.logout);
 router.get('/',                         Auth.isAuthenticated(),                 UserController.get);
 router.get('/userdetail',                         Auth.isAuthenticated(),       UserController.userdetail);

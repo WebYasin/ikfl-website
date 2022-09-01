@@ -825,8 +825,9 @@ const update = async (req, res, next) => {
 
 const update_profile = async (req, res, next) => {
     try {
-        let where = req.query._id ? req.query._id :req.user._id;
-        if (!where) return res.status(400).send({error: "User id is required"});
+      
+        if (!req.params.id) return res.status(400).json({error: "User id is required"});
+        let profile = await FILE_UPLOAD.uploadMultipleFile(req);
         
         const schema = Joi.object({
             userName: Joi.string().required(),
@@ -835,19 +836,20 @@ const update_profile = async (req, res, next) => {
             role: Joi.string().required(),
             firstName: Joi.string().required(),
             lastName: Joi.string().empty(''),
+            files: Joi.array(),
             active: Joi.boolean()
 
         });
 
-        const { error } = schema.validate(req.body);
+        const { error } = schema.validate(profile);
         if (error) return res.status(400).send({ error });
        
-        let updateRec = {};
-        req.body.updatedBy = req.user._id;
-        // updateRec['$push'] = {category: req.body.category};
-        // delete req.body.category;
-        // updateRec['$set'] = req.body;
-        let user = await UserModel.updateOne({_id: req.params.id}, {$set: req.body});
+        profile.updatedBy = req.user._id;
+
+        if (profile.files.length) profile.file = profile.files.map(file => file._id);
+        else delete profile.files;
+
+        let user = await UserModel.updateOne({_id: req.params.id}, {$set: profile});
         if (!user) return res.status(400).send({error: "User update failed"});
 
         return res.status(201).send({
@@ -1167,7 +1169,66 @@ const userdetail = async (req, res, next) => {
 };
 
 
+////////////////////////
 
+
+const changePassword = async (req, res, next) => {
+    let data = req.body;
+    try {
+        const schema = Joi.object({
+            oldPassword:Joi.string().required(),
+            newPassword: Joi.string().min(6).max(15).required(),
+            confirmPassword: Joi.string().valid(Joi.ref('newPassword')).required(),
+           
+        });
+        
+        const { error } = schema.validate(data);
+        if (error) return res.status(400).json({ error });
+
+            let user = await UserModel.findOne({_id: ObjectId(req.user._id)}, {password: 0});
+            if (!user) return res.status(400).send({error: `User does not exists`});
+    
+            let validate = await user.isValidPassword(req.body.oldPassword);
+            if(validate)
+            {
+                const salt = await bcrypt.genSalt(parseInt(process.env.HASH_COST));
+                let password = await bcrypt.hash(req.body.newPassword, salt);
+                let updatePassword = await UserModel.updateOne({_id:  req.user._id}, {$set: {password:password,firstLogin:false}});
+                 if (updatePassword)
+                 {
+                    
+                    // let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/changePasswordMail.ejs'), 'utf8')),
+                    // dataToCompile = {
+                    //     userName: `${user.firstName || ''} ${user.lastName || ''}`,
+                    // };
+    
+                    // await mail.sendMail([user.email], 'Password Change Successfully', compiled(dataToCompile));
+ 
+                    // let token = (req.headers['authorization'] || '').toString();
+                    // await SessionModel.updateOne({token: token, logout: false}, {$set: {logout: true}});
+                    
+
+                    return res.status(200).send({ result : { msg :'Password change successfully..!!!',status:'SUCCESS!' } });
+                    
+                 }else{ 
+                    return res.status(400).json({error: "Password update failed"});
+                }
+                
+
+            }else{
+                validate = !validate ? CONSTANT.INVALID_PASSWORD : !user.active ? 'User'+CONSTANT.INACTIVE : null;
+                if (validate) return res.status(400).send({error: validate});
+            
+            }
+
+        
+
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+////////////////////////
 module.exports = {
     login,
     otpLogin,
@@ -1204,5 +1265,6 @@ module.exports = {
     getAllCounts,
     exportUserList,
     userdetail,
-    update_profile
+    update_profile,
+    changePassword
 };

@@ -47,6 +47,10 @@ const create = async (req, res, next) => {
             mtitle: Joi.string().empty(''),
             gtitle: Joi.string().empty(''),
             gdescription: Joi.string().empty(''),
+            mntitle: Joi.string().empty(''),
+            awtitle: Joi.string().empty(''),
+            awdescription: Joi.string().empty(''),
+
             status: Joi.number(),
             customFields: Joi.object()
         });
@@ -87,8 +91,8 @@ const get = async (req, res, next) => {
         .populate('file', 'name original path thumbnail smallFile')
         .populate('blog', 'name original path thumbnail smallFile');
        
-        record.directorList     = await TeamModel.find({status:1,type:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
-        record.teamList     = await TeamModel.find({status:1,type:2}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
+        record.directorList     = await TeamModel.find({status:1,type:1}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile');
+        record.teamList     = await TeamModel.find({status:1,type:2}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile');
 
         record.visionList   = await VisionModel.find({status:1,show_value:0}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
 
@@ -136,6 +140,9 @@ const update = async (req, res, next) => {
             mtitle: Joi.string().empty(''),
             gtitle: Joi.string().empty(''),
             gdescription: Joi.string().empty(''),
+            mntitle: Joi.string().empty(''),
+            awtitle: Joi.string().empty(''),
+            awdescription: Joi.string().empty(''),
             status: Joi.number(),
             customFields: Joi.object()
         });
