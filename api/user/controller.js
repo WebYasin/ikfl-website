@@ -33,6 +33,7 @@ const FILE_UPLOAD               = require('@lib/file_upload');
 const excel                     = require("exceljs");
 const _                         = require('lodash');
 const mqtt                      = require('@middleware/mqtt');
+const bcrypt                   = require('bcrypt');
 // const msg91                     = require("msg91")(process.env.MSG91_API_KEY);
 const msg91                     = {};
 
@@ -1173,7 +1174,9 @@ const userdetail = async (req, res, next) => {
 
 
 const changePassword = async (req, res, next) => {
-    let data = req.body;
+
+    let data = req.body
+ 
     try {
         const schema = Joi.object({
             oldPassword:Joi.string().required(),
@@ -1184,8 +1187,9 @@ const changePassword = async (req, res, next) => {
         
         const { error } = schema.validate(data);
         if (error) return res.status(400).json({ error });
-
+        
             let user = await UserModel.findOne({_id: ObjectId(req.user._id)}, {password: 0});
+            
             if (!user) return res.status(400).send({error: `User does not exists`});
     
             let validate = await user.isValidPassword(req.body.oldPassword);
@@ -1206,8 +1210,7 @@ const changePassword = async (req, res, next) => {
  
                     // let token = (req.headers['authorization'] || '').toString();
                     // await SessionModel.updateOne({token: token, logout: false}, {$set: {logout: true}});
-                    
-
+                
                     return res.status(200).send({ result : { msg :'Password change successfully..!!!',status:'SUCCESS!' } });
                     
                  }else{ 
@@ -1218,7 +1221,7 @@ const changePassword = async (req, res, next) => {
             }else{
                 validate = !validate ? CONSTANT.INVALID_PASSWORD : !user.active ? 'User'+CONSTANT.INACTIVE : null;
                 if (validate) return res.status(400).send({error: validate});
-            
+                
             }
 
         

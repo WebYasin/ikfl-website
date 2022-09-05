@@ -45,19 +45,19 @@ const BankSchema = new mongoose.Schema({
 }, { timestamps: true, versionKey: false });
 
 const UserSchema = new mongoose.Schema({
-    email: { type: String, required: true },
+    email: { type: String, required: false },
     phoneNumber: { type: Number, required: false },
-    userName: { type: String, required: true },
+    userName: { type: String, required: false },
     password: { type: String, required: false },
-    role: { type: objectId, ref: 'Role',required: true  },
-    firstName: { type: String, required: true },
+    role: { type: objectId, ref: 'Role',required: false  },
+    firstName: { type: String, required: false },
     lastName: { type: String, required: false },
     file: { type: objectId, ref: 'File' },
     coverPhoto: { type: objectId, ref: 'File' },
     registerDevices: [DevicesSchema],
     active: { type: Boolean, default: true },
     firstLogin: { type: Boolean, default: true },
-    online: { type: Boolean, default: true },
+    online: { type: Boolean, default: false },
     createdBy: { type: objectId, ref: 'User' },
     updatedBy: { type: objectId, ref: 'User' },
     customFields: { type: Object, default: {} }

@@ -41,5 +41,9 @@ router.get('/getUserList',              Auth.isAuthenticated(),                 
 router.get('/groupUsers/:groupId',      Auth.isAuthenticated(),                 UserController.getUnfollowedGroupUsers);
 router.get('/exportUserList',                                                   UserController.exportUserList);
 router.post('/create/professional',     Auth.isAuthenticated(),                 UserController.registration);
+router.post('/changePassword',     Auth.isAuthenticated(),                 UserController.changePassword);
+
+
+
 
 module.exports = router;

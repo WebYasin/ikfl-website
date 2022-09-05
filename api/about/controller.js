@@ -1130,6 +1130,9 @@ const getGalleryDetail = async (req, res, next) => {
         .populate('attributes.attributeId', 'name')
         .populate('file', 'name original path thumbnail smallFile')
         .populate('blog', 'name original path thumbnail smallFile');
+        
+        record.blogList = await BlogModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile')
+        .populate('thumbnail', 'name original path thumbnail smallFile');
         record.meta = await MetaModel.find({status:1,link:'media'}).populate('file', 'name original path thumbnail smallFile');
         record.setting = await SettingModel.find()
         .populate('logo', 'name original path thumbnail smallFile')
