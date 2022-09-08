@@ -18,6 +18,8 @@ const { AboutModel,
     GalleryHeadingModel,
     GalleryModel,
     BlogModel,
+    QuaterlyReportModel,
+    FinancialYearModel,
     VisionModel }                   = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
@@ -885,6 +887,7 @@ const createReports = async (req, res, next) => {
     try {
         const schema = Joi.object({
             year: Joi.string().required(),
+            name: Joi.string().required(),
             sort_order: Joi.number().empty(''),
             status: Joi.number().empty(''),
             files: Joi.array(),
@@ -921,7 +924,7 @@ const getReports = async (req, res, next) => {
         delete query.pagination;
         delete query.limit;
 
-        let docs = await AnnualReportModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile');
+        let docs = await AnnualReportModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile').populate('year','_id name');
         return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
@@ -935,6 +938,7 @@ const updateReports = async (req, res, next) => {
         let team = await FILE_UPLOAD.uploadMultipleFile(req);
         const schema = Joi.object({
             year: Joi.string().required(),
+            name: Joi.string().required(),
             sort_order: Joi.number().empty(''),
             status: Joi.number().empty(''),
             files: Joi.array(),
@@ -1095,7 +1099,13 @@ const getInformationDetail = async (req, res, next) => {
         delete query.limit;
         let record = { };
         record.heading = await informationModel.find({status:1}).populate('file', 'name original path thumbnail smallFile');
-        record.annualReports = await AnnualReportModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile');
+
+        record.yearList = await FinancialYearModel.find({status:1}).sort({createdAt: 1});
+       
+        record.annualReports = await AnnualReportModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile').populate('year','id_ name');
+      
+        record.quaterlyList = await QuaterlyReportModel.find({status:1}).populate('q1', 'name original path thumbnail smallFile').populate('q2', 'name original path thumbnail smallFile').populate('q3', 'name original path thumbnail smallFile').populate('q4', 'name original path thumbnail smallFile').populate('year','id_ name');
+
         record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
         .populate('attributes.attributeId', 'name')
         .populate('file', 'name original path thumbnail smallFile')
@@ -1144,7 +1154,239 @@ const getGalleryDetail = async (req, res, next) => {
         return res.status(400).json(UTILS.errorHandler(error));
     }
 };
+/////////////////////////////////////
 
+
+
+const createQuaterly = async (req, res, next) => {
+    let info = await FILE_UPLOAD.uploadMultipleFile(req);
+
+    try {
+        const schema = Joi.object({
+         
+            year: Joi.string().required(),
+            status: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+    
+        const { error } = schema.validate(info);
+        if (error) return res.status(400).json({ error });
+
+        let files = info.files;
+        if (files.length) {
+            info.q1 = files.filter(e => e.fieldName == 'file').map(file => file._id);
+            info.q2 = files.filter(e => e.fieldName == 'blog').map(file => file._id);
+            info.q3 = files.filter(e => e.fieldName == 'coverPhoto').map(file => file._id);
+            info.q4 = files.filter(e => e.fieldName == 'carcass').map(file => file._id);
+        } else delete info.files;
+ 
+
+        info.createdBy = req.user._id;
+        info.updatedBy = req.user._id;
+
+        info = new QuaterlyReportModel(info);
+        info = await info.save();
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: info
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const getQuaterly = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        if (query.name) query.name = new RegExp(query.name, "i");
+        delete query.pagination;
+        delete query.limit;
+
+        let docs = await QuaterlyReportModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('q1', 'name original path thumbnail smallFile').populate('q2', 'name original path thumbnail smallFile').populate('q3', 'name original path thumbnail smallFile').populate('q4', 'name original path thumbnail smallFile').populate('year','id_ name');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const updateQuaterly = async (req, res, next) => {
+    
+    try {
+        if (!req.params.id) return res.status(400).json({error: "quaterly id is required"});
+        let info = await FILE_UPLOAD.uploadMultipleFile(req);
+        const schema = Joi.object({
+            year: Joi.string().required(),
+            status: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+
+        const { error } = schema.validate(req.body);
+        if (error) return res.status(400).json({ error });
+
+       
+
+        let files = info.files;
+        if (files.length) {
+            info.q1 = files.filter(e => e.fieldName == 'file').map(file => file._id);
+            info.q2 = files.filter(e => e.fieldName == 'blog').map(file => file._id);
+            info.q3 = files.filter(e => e.fieldName == 'coverPhoto').map(file => file._id);
+            info.q4 = files.filter(e => e.fieldName == 'carcass').map(file => file._id);
+        } else delete info.files;
+       
+        if(info.q1 && info.q1.length < 1) delete info.q1;
+        if(info.q2 && info.q2.length < 1) delete info.q2;
+        if(info.q3 && info.q3.length < 1) delete info.q3;
+        if(info.q4 && info.q4.length < 1) delete info.q4;
+
+
+        req.body.updatedBy = req.user._id;
+
+        info = await QuaterlyReportModel.updateOne({_id: req.params.id}, {$set: req.body});
+       
+        if (!info) return res.status(400).json({error: "Quaterly update failed"});
+        
+        return res.status(201).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "Quaterly updated succesfully"
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const removeQuaterly = async (req, res, next) => {
+    try {
+        const schema = Joi.object({
+            id: Joi.string().required()
+        });
+
+        const { error } = schema.validate(req.params);
+        if (error) return res.status(400).json({ error });
+
+        await QuaterlyReportModel.deleteOne({_id: req.params.id});
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "quaterly Deleted succesfully" 
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+////////////////////////////
+
+
+const createfinancialYear = async (req, res, next) => {
+    let info = await FILE_UPLOAD.uploadMultipleFile(req);
+
+    try {
+        const schema = Joi.object({
+            name: Joi.string().required(),
+            symbol: Joi.string().required(),
+            status: Joi.number().empty(''),
+            sort_order: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+    
+        const { error } = schema.validate(info);
+        if (error) return res.status(400).json({ error });
+
+        if (info.files.length) info.q1 = info.files.map(file => file._id);
+        else delete info.files;
+
+
+        info.createdBy = req.user._id;
+        info.updatedBy = req.user._id;
+
+        info = new FinancialYearModel(info);
+        info = await info.save();
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: info
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const getfinancialYear = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        if (query.name) query.name = new RegExp(query.name, "i");
+        delete query.pagination;
+        delete query.limit;
+
+        let docs = await FinancialYearModel.find(query).sort({createdAt: 1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const updatefinancialYear = async (req, res, next) => {
+    
+    try {
+        if (!req.params.id) return res.status(400).json({error: "Financial id is required"});
+        let team = await FILE_UPLOAD.uploadMultipleFile(req);
+        const schema = Joi.object({
+            name: Joi.string().required(),
+            symbol: Joi.string().required(),
+            status: Joi.number().empty(''),
+            sort_order: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+
+        const { error } = schema.validate(req.body);
+        if (error) return res.status(400).json({ error });
+
+        if (team.files.length) team.file = team.files.map(file => file._id);
+        else delete team.files;
+        req.body.updatedBy = req.user._id;
+
+        team = await FinancialYearModel.updateOne({_id: req.params.id}, {$set: req.body});
+       
+        if (!team) return res.status(400).json({error: "Financial update failed"});
+        
+        return res.status(201).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "Financial updated succesfully"
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const removefinancialYear = async (req, res, next) => {
+    try {
+        const schema = Joi.object({
+            id: Joi.string().required()
+        });
+
+        const { error } = schema.validate(req.params);
+        if (error) return res.status(400).json({ error });
+
+        await FinancialYearModel.deleteOne({_id: req.params.id});
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "Financial Deleted succesfully" 
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
+//////////////////////////////////
 
 module.exports = {
     create,
@@ -1185,5 +1427,13 @@ module.exports = {
     createGallery,
     updateGallery,
     removeGallery ,
-    getGalleryDetail 
+    getGalleryDetail ,
+    getQuaterly,
+    createQuaterly,
+    updateQuaterly,
+    removeQuaterly,
+    getfinancialYear,
+    createfinancialYear,
+    updatefinancialYear,
+    removefinancialYear
 };

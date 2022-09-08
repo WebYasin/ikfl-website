@@ -52,6 +52,12 @@ router.post('/reports',            Auth.isAuthenticated(),       AboutController
 router.put('/reports/:id',         Auth.isAuthenticated(),       AboutController.updateReports);
 router.delete('/reports/:id',      Auth.isAuthenticated(),       AboutController.removeReports);
 
+
+router.get('/quaterly',             Auth.isAuthenticated(),       AboutController.getQuaterly);
+router.post('/quaterly',            Auth.isAuthenticated(),       AboutController.createQuaterly);
+router.put('/quaterly/:id',         Auth.isAuthenticated(),       AboutController.updateQuaterly);
+router.delete('/quaterly/:id',      Auth.isAuthenticated(),       AboutController.removeQuaterly);
+
 router.get('/gallery',             Auth.isAuthenticated(),       AboutController.getGallery);
 router.post('/gallery',            Auth.isAuthenticated(),       AboutController.createGallery);
 router.put('/gallery/:id',         Auth.isAuthenticated(),       AboutController.updateGallery);
@@ -60,5 +66,13 @@ router.delete('/gallery/:id',      Auth.isAuthenticated(),       AboutController
 
 router.get('/getData',                                          AboutController.getInformationDetail);
 router.get('/getGalleryData',                                   AboutController.getGalleryDetail);
+
+
+router.get('/financial_year',             Auth.isAuthenticated(),       AboutController.getfinancialYear);
+router.post('/financial_year',            Auth.isAuthenticated(),       AboutController.createfinancialYear);
+router.put('/financial_year/:id',         Auth.isAuthenticated(),       AboutController.updatefinancialYear);
+router.delete('/financial_year/:id',      Auth.isAuthenticated(),       AboutController.removefinancialYear);
+
+
 
 module.exports = router;
