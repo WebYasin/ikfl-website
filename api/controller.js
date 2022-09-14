@@ -37,12 +37,8 @@ module.exports = {
     SolutionController:             require('./solution/controller.js'),
     EventController:                require('./event/controller.js'),
     CareerController:                require('./career/controller.js'), 
-    PolicyController:                require('./policy/controller.js'),   
-<<<<<<< HEAD
-    SettingController:                require('./setting/controller.js'),    
-    ComplainController:              require('./complain/controller')        
-=======
+    PolicyController:                require('./policy/controller.js'),    
+    ComplainController:              require('./complain/controller'),        
     SettingController:                require('./setting/controller.js'),
     OracleController:               require('./oracle/controller'),            
->>>>>>> 440c7d48b1d125d53ab73ba9b1c5eaa11ef169cf
 }
