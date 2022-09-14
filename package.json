@@ -64,6 +64,7 @@
     "node-image-resizer": "^1.0.0",
     "node-notifier": "^9.0.0",
     "nodemailer": "^6.4.17",
+    "oracledb": "^5.5.0",
     "path": "^0.12.7",
     "read-excel-file": "^5.3.2",
     "request": "^2.88.2",
