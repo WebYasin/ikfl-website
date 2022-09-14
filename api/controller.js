@@ -38,5 +38,6 @@ module.exports = {
     EventController:                require('./event/controller.js'),
     CareerController:                require('./career/controller.js'), 
     PolicyController:                require('./policy/controller.js'),   
-    SettingController:                require('./setting/controller.js'),            
+    SettingController:                require('./setting/controller.js'),    
+    ComplainController:              require('./complain/controller')        
 }

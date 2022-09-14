@@ -20,6 +20,7 @@ const { AboutModel,
     BlogModel,
     QuaterlyReportModel,
     FinancialYearModel,
+    InvestorPresentationModel,
     VisionModel }                   = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
@@ -1388,6 +1389,112 @@ const removefinancialYear = async (req, res, next) => {
 
 //////////////////////////////////
 
+
+const createPresentation = async (req, res, next) => {
+    let info = await FILE_UPLOAD.uploadMultipleFile(req);
+
+    try {
+        const schema = Joi.object({
+            year: Joi.string().required(),
+            name: Joi.string().required(),
+            sort_order: Joi.number().empty(''),
+            status: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+    
+        const { error } = schema.validate(info);
+        if (error) return res.status(400).json({ error });
+
+        if (info.files.length) info.file = info.files.map(file => file._id);
+        else delete info.files;
+
+        info.createdBy = req.user._id;
+        info.updatedBy = req.user._id;
+
+        info = new InvestorPresentationModel(info);
+        info = await info.save();
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: info
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const getPresentation = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        if (query.name) query.name = new RegExp(query.name, "i");
+        delete query.pagination;
+        delete query.limit;
+
+        let docs = await InvestorPresentationModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile').populate('year','_id name');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const updatePresentation = async (req, res, next) => {
+    
+    try {
+        if (!req.params.id) return res.status(400).json({error: "Address id is required"});
+        let team = await FILE_UPLOAD.uploadMultipleFile(req);
+        const schema = Joi.object({
+            year: Joi.string().required(),
+            name: Joi.string().required(),
+            sort_order: Joi.number().empty(''),
+            status: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+
+        const { error } = schema.validate(req.body);
+        if (error) return res.status(400).json({ error });
+
+        if (team.files.length) team.file = team.files.map(file => file._id);
+        else delete team.files;
+        req.body.updatedBy = req.user._id;
+
+        team = await InvestorPresentationModel.updateOne({_id: req.params.id}, {$set: req.body});
+       
+        if (!team) return res.status(400).json({error: "Address update failed"});
+        
+        return res.status(201).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "Address updated succesfully"
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const removePresentation = async (req, res, next) => {
+    try {
+        const schema = Joi.object({
+            id: Joi.string().required()
+        });
+
+        const { error } = schema.validate(req.params);
+        if (error) return res.status(400).json({ error });
+
+        await InvestorPresentationModel.deleteOne({_id: req.params.id});
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "Address Deleted succesfully" 
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+/////////////////////////////
+
 module.exports = {
     create,
     get,
@@ -1435,5 +1542,9 @@ module.exports = {
     getfinancialYear,
     createfinancialYear,
     updatefinancialYear,
-    removefinancialYear
+    removefinancialYear,
+    getPresentation,
+    createPresentation,
+    updatePresentation,
+    removePresentation
 };

@@ -46,4 +46,5 @@ router.use('/informationCenter',                    require("./about/routes"));
 router.use('/customerSection',                    require("./product/routes"));
 router.use('/gallery',                    require("./about/routes"));
 
+router.use('/complain',                    require("./complain/routes"));
 module.exports = router;

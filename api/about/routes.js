@@ -74,5 +74,10 @@ router.put('/financial_year/:id',         Auth.isAuthenticated(),       AboutCon
 router.delete('/financial_year/:id',      Auth.isAuthenticated(),       AboutController.removefinancialYear);
 
 
+router.get('/presentation',             Auth.isAuthenticated(),       AboutController.getPresentation);
+router.post('/presentation',            Auth.isAuthenticated(),       AboutController.createPresentation);
+router.put('/presentation/:id',         Auth.isAuthenticated(),       AboutController.updatePresentation);
+router.delete('/presentation/:id',      Auth.isAuthenticated(),       AboutController.removePresentation);
+
 
 module.exports = router;

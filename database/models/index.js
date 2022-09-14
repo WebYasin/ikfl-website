@@ -53,5 +53,7 @@ module.exports = {
     GalleryModel:                       require('./gallerymodel'),
     GalleryHeadingModel:                require('./galleryheadingmodel'),
     QuaterlyReportModel:                require('./quaterlyreportmodel'),
-    FinancialYearModel:                 require('./financialyearmodel')
+    FinancialYearModel:                 require('./financialyearmodel'),
+    InvestorPresentationModel:          require('./investorpresentationmodel'),
+    ComplainModel:                      require('./complainmodel')
 }
