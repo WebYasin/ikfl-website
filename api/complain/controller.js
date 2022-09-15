@@ -136,7 +136,7 @@ const CheckStatus = async (req, res, next) => {
         const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let where = {};
-        if (req.query.id) where.loanappid = req.query.id;
+        if (req.query.id) where.complainId = req.query.id;
      
         let docs = await ComplainModel.find(where).limit(1);
         return res.status(200).send({ result: docs });
