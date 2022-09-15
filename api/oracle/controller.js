@@ -17,6 +17,7 @@ const get = async (req, res, next) => {
         
         let query = req.query;
         let conn = await oracledbConn.connect();
+      
         let docs = await conn.execute(`select 
         "Application Received Date",
         "Branch Name",

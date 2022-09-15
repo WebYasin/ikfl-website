@@ -34,6 +34,9 @@ router.post('/loanSlider',            Auth.isAuthenticated(),       HomeControll
 router.put('/loanSlider/:id',         Auth.isAuthenticated(),       HomeController.updateloanSlider);
 router.delete('/loanSlider/:id',      Auth.isAuthenticated(),       HomeController.removeloanSlider);
 
+router.post('/sentOtp',                                             HomeController.sentOtp);
+router.post('/verifyOtp',                                           HomeController.verifyOtp);
+
 
 
 module.exports = router;

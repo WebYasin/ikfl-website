@@ -14,8 +14,7 @@ const create = async (req, res, next) => {
             const schema = Joi.object({
                 type: Joi.string().required(),
                 token: Joi.string().required(),
-                userId: Joi.string().required(),
-                sender: Joi.string().required(),
+                number: Joi.number(),
                 expiry: Joi.number(),
                 active: Joi.boolean()
             });

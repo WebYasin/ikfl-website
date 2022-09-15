@@ -7,8 +7,7 @@ const objectId                  = mongoose.Schema.Types.ObjectId;
 const OtpShema = new mongoose.Schema({
     type: { type: String, required: true, enum: ['OTP'] },
     token: { type: String, required: true },
-    userId: { type: objectId, ref: 'User' },
-    email: { type: String, required: false },
+    mobile: { type: Number, required: false },
     expiry: { type: Number, required: true },
     active: { type: Boolean, required: false }
 }, { timestamps: true, versionKey: false });

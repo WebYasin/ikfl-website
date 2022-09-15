@@ -15,12 +15,14 @@ const { HomeModel,
     SettingModel,
     MetaModel,
     VisionModel,
-    TestimonialModel }              = require('@database');
+    TestimonialModel,
+    OtpModel }                      = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 const FILE_UPLOAD                   = require('@lib/file_upload');
 const { result }                    = require('@hapi/joi/lib/base');
-
+const msg91                         = require("msg91-api")("343914ABecqB83V6bZ63199dfeP1");
+const moment                        = require('moment');
 const create = async (req, res, next) => {
  
     let home = await FILE_UPLOAD.uploadMultipleFile(req);
@@ -748,6 +750,74 @@ const removeloanSlider = async (req, res, next) => {
     }
 };
 
+
+const sentOtp = async (req, res, next) => {
+    let sendOtp = req.body;
+    let randomNumber = await UTILS.getRandomNumber();
+    try {
+        const schema = Joi.object({
+            number: Joi.number().required(),
+        });
+
+        const { error } = schema.validate(sendOtp);
+        if (error) return res.status(400).json({ error });
+
+        var args = {
+            "flow_id": "6319a189aed1b13a913072a6",
+            "sender": "KISANT",
+            "mobiles": sendOtp.number, 
+            "OTP": randomNumber,
+            "short_url": 1
+          };
+          let otp = {
+            type: "OTP",
+            token: randomNumber,
+            mobile: sendOtp.number,
+            expiry: moment().add(10, 'm').valueOf(),
+            active: true
+        };
+       
+        await OtpModel.deleteOne({mobile: sendOtp.number});
+        otp = new OtpModel(otp);
+        otp = await otp.save();
+          msg91.sendSMS(args, function(err, response){
+              if(response.type == 'success') return res.status(200).send({result :"OTP sent successfully"})
+            
+          });
+          
+          
+   
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+}
+
+const verifyOtp = async (req, res, next) => {
+    let verifyOtp = req.body;
+    try {
+        const schema = Joi.object({
+            number: Joi.number().required(),
+            token: Joi.number().required(),
+
+        });
+
+        const { error } = schema.validate(verifyOtp);
+        if (error) return res.status(400).json({ error });
+        const otp = await OtpModel.findOne({mobile: req.body.number, token: req.body.token, active: true});
+        if (!otp) return res.status(400).send({error: "Your OTP is not valid!"});
+        if (otp.expiry < moment().valueOf()) return res.status(400).send({error: "OTP valid only for 10 minutes. Request for new OTP!"});
+       
+        await OtpModel.deleteOne({mobile: req.body.number});
+        return res.status(200).send({result :"OTP verify successfully", status: CONSTANT.REQUESTED_CODES.SUCCESS,})
+       
+          
+   
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+}
+
+
 module.exports = {
     create,
     get,
@@ -772,5 +842,7 @@ module.exports = {
     getloanSlider,
     createloanSlider,
     updateloanSlider,
-    removeloanSlider
+    removeloanSlider,
+    sentOtp,
+    verifyOtp
 };
