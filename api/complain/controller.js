@@ -19,7 +19,7 @@ const create = async (req, res, next) => {
     enquiry.status = 'pending';
     try {
         const schema = Joi.object({
-            loanappid: Joi.string().required(),
+            loanappid: Joi.string(),
             name: Joi.string().required(),
             phone: Joi.string().required(),
             email: Joi.string().email().required(),

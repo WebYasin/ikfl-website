@@ -13,7 +13,7 @@ const ComplainSchema = new mongoose.Schema({
     phone: { type: String, required: true },
     email: { type: String, required: true },
     concern: { type: String, required: false },
-    type: { type: String, required: true, enum: ['COMPLAINST','QUERY'] },
+    type: { type: String, required: true, enum: ['COMPLAINT','QUERY'] },
     address: { type: String, required: false,default:''},
     state: { type: String, required: false,default:''},
     pin: { type: String, required: false,default:''},
