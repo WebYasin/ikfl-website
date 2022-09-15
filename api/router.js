@@ -48,4 +48,6 @@ router.use('/gallery', require("./about/routes"));
 router.use('/oracle', require("./oracle/routes"));
 
 router.use('/complain',                    require("./complain/routes"));
+router.use('/payment',                    require("./payment/routes"));
+
 module.exports = router;
