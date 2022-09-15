@@ -7,6 +7,11 @@ const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 const FILE_UPLOAD               = require('@lib/file_upload');
 const ObjectId                  = require('mongodb').ObjectId;
+const ejs                       = require('ejs');
+const fs                        = require('fs');
+const path                      = require('path');
+const moment                    = require('moment');
+const mail                      = require('@lib/mailer');
 
 const create = async (req, res, next) => {
     let enquiry = req.body || {};
@@ -30,6 +35,22 @@ const create = async (req, res, next) => {
         
         enquiry = new ComplainModel(enquiry);
         enquiry = await enquiry.save();
+          
+        if (enquiry.email) {
+         
+            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/complainMail.ejs'), 'utf8')),
+                dataToCompile = {
+                    loanappid:enquiry.loanappid,
+                    email: enquiry.email,
+                    phone:enquiry.phone,
+                    concern:enquiry.concern,
+                    userName: enquiry.name,
+                };
+
+            await mail.sendMail([process.env.ADMIN_MAIL], `You have new complain #${enquiry.complainId}`, compiled(dataToCompile));
+            await mail.sendMail([enquiry.email], `Your Complain is ID #${enquiry.complainId}`, compiled(dataToCompile));
+        }
+
 
         return res.status(200).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
