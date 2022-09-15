@@ -40,5 +40,7 @@ module.exports = {
     PolicyController:                require('./policy/controller.js'),    
     ComplainController:              require('./complain/controller'),        
     SettingController:                require('./setting/controller.js'),
-    OracleController:               require('./oracle/controller'),            
+    OracleController:               require('./oracle/controller'),     
+    PaymentController:              require('./payment/controller.js')
+
 }

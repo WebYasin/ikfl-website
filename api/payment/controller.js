@@ -1,39 +1,39 @@
 'use strict';
 
-const modelName                     = 'ContactEnquiry';
+const modelName                     = 'payment';
 const Joi                           = require('@hapi/joi');
-const { ComplainModel   }       = require('@database');
+const { PaymentModel   }       = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 const FILE_UPLOAD               = require('@lib/file_upload');
 const ObjectId                  = require('mongodb').ObjectId;
 
 const create = async (req, res, next) => {
-    let enquiry = req.body || {};
+    let payment = req.body || {};
 
-    enquiry.status = 'pending';
+    payment.status = 0;
     try {
         const schema = Joi.object({
             loanappid: Joi.string().required(),
+            transaction: Joi.string().required(),
+            paymentType: Joi.string().required(),
+            amount: Joi.number().required(),
             name: Joi.string().required(),
-            phone: Joi.string().required(),
-            email: Joi.string().email().required(),
-            concern: Joi.string().empty(''),
-            status: Joi.string().empty(''),
-            active: Joi.number().empty(''),
+            phone: Joi.number().required(),
+            status: Joi.number().empty(''),
             files: Joi.array()
         });
 
-        const { error } = schema.validate(enquiry);
+        const { error } = schema.validate(payment);
         if (error) return res.status(400).json({ error });
 
         
-        enquiry = new ComplainModel(enquiry);
-        enquiry = await enquiry.save();
+        payment = new PaymentModel(payment);
+        payment = await payment.save();
 
         return res.status(200).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
-            result: enquiry
+            result: payment
         });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
@@ -47,7 +47,7 @@ const get = async (req, res, next) => {
         let where = {};
         if (req.query.id) where._id = req.query.id;
      
-        let docs = await ComplainModel.find(where).sort({createdAt: -1}).limit(limit).skip(pagination*limit);
+        let docs = await PaymentModel.find(where).sort({createdAt: -1}).limit(limit).skip(pagination*limit);
        
         return res.status(200).send({ result: docs,where: req.query.id });
     } catch (error) {
@@ -76,7 +76,7 @@ const update = async (req, res, next) => {
       
         req.body.updatedBy = req.user._id;
      
-        let aboutData = await ComplainModel.updateOne({ _id: req.params.id }, {$set: req.body});
+        let aboutData = await PaymentModel.updateOne({ _id: req.params.id }, {$set: req.body});
        
         if (!aboutData) return res.status(400).json({ error: "complain update failed" });
         return res.status(201).send({
@@ -99,7 +99,7 @@ const remove = async (req, res, next) => {
         const { error } = schema.validate(req.params);
         if (error) return res.status(400).json({ error });
 
-        await ComplainModel.remove({ _id: req.params.id });
+        await PaymentModel.remove({ _id: req.params.id });
         return res.status(200).send({ result: "Contact Enquiry deleted successfully" });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
