@@ -781,7 +781,7 @@ const sentOtp = async (req, res, next) => {
         otp = new OtpModel(otp);
         otp = await otp.save();
           msg91.sendSMS(args, function(err, response){
-              if(response.type == 'success') return res.status(200).send({result :"OTP sent successfully"})
+              if(response.type == 'success') return res.status(200).send({result :"OTP sent successfully",status: CONSTANT.REQUESTED_CODES.SUCCESS})
             
           });
           
@@ -808,7 +808,7 @@ const verifyOtp = async (req, res, next) => {
         if (otp.expiry < moment().valueOf()) return res.status(400).send({error: "OTP valid only for 10 minutes. Request for new OTP!"});
        
         await OtpModel.deleteOne({mobile: req.body.number});
-        return res.status(200).send({result :"OTP verify successfully", status: CONSTANT.REQUESTED_CODES.SUCCESS,})
+        return res.status(200).send({result :"OTP verify successfully", status: CONSTANT.REQUESTED_CODES.SUCCESS})
        
           
    
