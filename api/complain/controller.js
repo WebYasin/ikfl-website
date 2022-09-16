@@ -169,7 +169,7 @@ const CheckStatus = async (req, res, next) => {
          record.complain = await ComplainModel.find(where).limit(1);
          record.history = await ComplainStatus.find({complainId: {$in :record.complain.map(e => new RegExp(e._id,'i'))}}).sort({createdAt: -1});
         
-        return res.status(200).send({ result: record });
+        return res.status(200).send({ result: record ,status: CONSTANT.REQUESTED_CODES.SUCCESS,});
     } catch (error) {
         return res.status(400).json(UsTILS.errorHandler(error));
     }
