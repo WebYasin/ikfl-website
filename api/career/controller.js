@@ -10,6 +10,7 @@ const {
     MetaModel,
     SettingModel,
     CenterModel,
+    CareerEnquiryModel,
     CareerHeadingModel
  }                 = require('@database');
 const CONSTANT                      = require('@lib/constant');
@@ -55,6 +56,49 @@ const create = async (req, res, next) => {
         return res.status(400).json(UTILS.errorHandler(error));
     }
 }
+
+
+
+
+
+
+const CreateEnquiry = async (req, res, next) => {
+    let career = await FILE_UPLOAD.uploadMultipleFile(req);
+    
+    try {
+        const schema = Joi.object({
+            name: Joi.string().required(),
+            email: Joi.string().empty(''),
+            files: Joi.array(),
+            phone: Joi.string().empty(''),
+            jobs: Joi.string().empty(''),
+            state: Joi.string().empty(''),
+            city: Joi.string().empty(''),
+            customFields: Joi.object()
+        });
+
+        const { error } = schema.validate(career);
+        if (error) return res.status(400).json({ error });
+
+        let files = career.files;
+        if (files.length) {
+            career.file = files.filter(e => e.fieldName == 'file').map(file => file._id);
+        } else delete career.files;
+        
+        career = new CareerEnquiryModel(career);
+        career = await career.save();
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: career
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+}
+
+
+
 
 const get = async (req, res, next) => {
     try {
@@ -636,5 +680,6 @@ module.exports = {
     getHeading,
     updateHeading,
     removeHeading,
-    getCareerData
+    getCareerData,
+    CreateEnquiry
 };

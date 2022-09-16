@@ -164,11 +164,13 @@ const CheckStatus = async (req, res, next) => {
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let where = {};
         if (req.query.id) where.complainId = req.query.id;
-     
-        let docs = await ComplainModel.find(where).limit(1);
-        return res.status(200).send({ result: docs });
+        let record ={ };
+         record.complain = await ComplainModel.find(where).limit(1);
+         record.history = await ComplainStatus.find({complainId: record.complain._id}).sort({createdAt: -1});
+       
+        return res.status(200).send({ result: record });
     } catch (error) {
-        return res.status(400).json(UTILS.errorHandler(error));
+        return res.status(400).json(UsTILS.errorHandler(error));
     }
 };
 
