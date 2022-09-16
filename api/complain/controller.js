@@ -19,11 +19,15 @@ const create = async (req, res, next) => {
     enquiry.status = 'pending';
     try {
         const schema = Joi.object({
-            loanappid: Joi.string().required(),
+            loanappid: Joi.string(),
             name: Joi.string().required(),
             phone: Joi.string().required(),
             email: Joi.string().email().required(),
             concern: Joi.string().empty(''),
+            address:Joi.string().trim(),
+            state:Joi.string().trim(),
+            pin:Joi.string().trim(),
+            type:Joi.string().required(),
             status: Joi.string().empty(''),
             active: Joi.number().empty(''),
             files: Joi.array()
@@ -45,6 +49,9 @@ const create = async (req, res, next) => {
                     phone:enquiry.phone,
                     concern:enquiry.concern,
                     userName: enquiry.name,
+                    address:enquiry.address,
+                    state:enquiry.state,
+                    pin:enquiry.pin,
                 };
 
             await mail.sendMail([process.env.ADMIN_MAIL], `You have new complain #${enquiry.complainId}`, compiled(dataToCompile));
@@ -81,10 +88,14 @@ const update = async (req, res, next) => {
         if (!req.params.id) return res.status(400).json({ error: "complain id is required" });
         let about = await FILE_UPLOAD.uploadMultipleFile(req);
         const schema = Joi.object({
-            loanappid: Joi.string().required(),
+            loanappid: Joi.string(),
             name: Joi.string().required(),
             phone: Joi.string().required(),
             email: Joi.string().email().required(),
+            address:Joi.string().trim(),
+            state:Joi.string().trim(),
+            pin:Joi.string().trim(),
+            type:Joi.string().required(),
             concern: Joi.string().empty(''),
             status: Joi.string().empty(''),
             active: Joi.number().empty(''),
