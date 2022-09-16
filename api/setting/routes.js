@@ -17,4 +17,12 @@ router.put('/meta/:id',         Auth.isAuthenticated(),       SettingController.
 router.delete('/meta/:id',      Auth.isAuthenticated(),       SettingController.removeMeta);
 
 
+
+router.post('/states',           Auth.isAuthenticated(),       SettingController.createState);
+router.get('/states',                                          SettingController.getState);
+router.put('/states/:id',         Auth.isAuthenticated(),       SettingController.updateState);
+router.delete('/states/:id',      Auth.isAuthenticated(),       SettingController.removeState);
+
+
+
 module.exports = router;

@@ -38,4 +38,6 @@ router.get('/getData',                                          CareerController
 
 router.post('/create',                                          CareerController.CreateEnquiry);
 
+router.get('/getcareerenquiry',                                 CareerController.GetCareerEnquiry);
+
 module.exports = router;

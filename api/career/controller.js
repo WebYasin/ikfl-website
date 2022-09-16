@@ -80,10 +80,9 @@ const CreateEnquiry = async (req, res, next) => {
         const { error } = schema.validate(career);
         if (error) return res.status(400).json({ error });
 
-        let files = career.files;
-        if (files.length) {
-            career.file = files.filter(e => e.fieldName == 'file').map(file => file._id);
-        } else delete career.files;
+     
+        if (career.files.length) career.file = career.files.map(file => file._id);
+        else delete career.files;
         
         career = new CareerEnquiryModel(career);
         career = await career.save();
@@ -96,6 +95,24 @@ const CreateEnquiry = async (req, res, next) => {
         return res.status(400).json(UTILS.errorHandler(error));
     }
 }
+
+
+
+
+const GetCareerEnquiry = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        delete query.pagination;
+        delete query.limit;
+        let docs = await CareerEnquiryModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        .populate('file', 'name original path thumbnail smallFile').populate('jobs','_id name').populate('state','_id name');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
 
 
 
@@ -557,6 +574,10 @@ const getHeading = async (req, res, next) => {
     }
 };
 
+
+
+
+
 const updateHeading = async (req, res, next) => {
     try {
         if (!req.params.id) return res.status(400).json({ error: "Benafits id is required" });
@@ -681,5 +702,6 @@ module.exports = {
     updateHeading,
     removeHeading,
     getCareerData,
-    CreateEnquiry
+    CreateEnquiry,
+    GetCareerEnquiry
 };
