@@ -2,7 +2,7 @@
 
 const modelName                     = 'ContactEnquiry';
 const Joi                           = require('@hapi/joi');
-const { ComplainModel   }       = require('@database');
+const { ComplainModel,ComplainStatus   }       = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 const FILE_UPLOAD               = require('@lib/file_upload');
@@ -110,6 +110,22 @@ const update = async (req, res, next) => {
      
         let aboutData = await ComplainModel.updateOne({ _id: req.params.id }, {$set: req.body});
        
+        let cmtstatus = '';
+        if(aboutData){
+
+            cmtstatus = {
+                "complainId":req.params.id,
+                "status":req.body.status,
+                "comment":req.body.concern
+            }
+                     
+           cmtstatus = new ComplainStatus(cmtstatus);
+           cmtstatus = await cmtstatus.save();
+
+        }
+
+        if (!cmtstatus) return res.status(400).json({ error: "complain status update failed" });
+
         if (!aboutData) return res.status(400).json({ error: "complain update failed" });
         return res.status(201).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
