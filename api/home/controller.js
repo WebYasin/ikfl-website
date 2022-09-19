@@ -830,10 +830,12 @@ const sentMessage = async (req, res, next) => {
         if (error) return res.status(400).json({ error });
 
         var args = {
-            "flow_id": "6319a189aed1b13a913072a6",
+            "flow_id": "63284651aa2eb70ea4747534",
             "sender": "KISANT",
             "mobiles": sendOtp.number, 
-            "message": "this is test message",
+            "name":"yasin",
+            "id":"abc",
+            "url":"websiteurl",
             "short_url": 1
           };
           
