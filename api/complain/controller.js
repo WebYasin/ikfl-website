@@ -12,6 +12,7 @@ const fs                        = require('fs');
 const path                      = require('path');
 const moment                    = require('moment');
 const mail                      = require('@lib/mailer');
+const msg91                         = require("msg91-api")("343914ABecqB83V6bZ63199dfeP1");
 
 const create = async (req, res, next) => {
     let enquiry = req.body || {};
@@ -63,15 +64,13 @@ const create = async (req, res, next) => {
         var args = {
             "flow_id": "63284651aa2eb70ea4747534",
             "sender": "KISANT",
-            "mobiles": req.body.number, 
-            "name":req.body.name,
+            "mobiles": enquiry.phone, 
+            "name":enquiry.name,
             "id":enquiry.complainId,
-            "url":"websiteurl",
+            "url":process.env.WEBSITE_URL,
             "short_url": 1
           };
-          
        
-        
           msg91.sendSMS(args, function(err, response){
             return res.status(200).send({
                 status: CONSTANT.REQUESTED_CODES.SUCCESS,
