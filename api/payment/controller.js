@@ -61,15 +61,15 @@ const update = async (req, res, next) => {
         if (!req.params.id) return res.status(400).json({ error: "Payment id is required" });
         let payment = req.body;
         const schema = Joi.object({
-            razorpay:Joi.string().required,
-            status: Joi.number().required,
+            razorpay:Joi.string().required(),
+            status: Joi.number().required(),
         });
-
+            
         const { error } = schema.validate(req.body);
         if (error) return res.status(400).json({ error });
 
       
-        req.body.updatedBy = req.user._id;
+       // req.body.updatedBy = req.user._id;
      
         let aboutData = await PaymentModel.updateOne({ _id: req.params.id }, {$set: req.body});
        
