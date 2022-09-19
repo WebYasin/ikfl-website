@@ -26,9 +26,9 @@ const ComplainSchema = new mongoose.Schema({
 ComplainSchema.pre('save', async function (next) {
     const currentTime       = moment().format('YYYYDM');
     if(this.type == "COMPLAINT"){
-    this.complainId         = 'COMP'+currentTime+(await autoIncrementModelID('complain'));
+    this.complainId         = 'C'+currentTime+(await autoIncrementModelID('complain'));
     }else{
-    this.complainId         = 'QUER'+currentTime+(await autoIncrementModelID('complain'));
+    this.complainId         = 'Q'+currentTime+(await autoIncrementModelID('complain'));
 
     }
     next();
