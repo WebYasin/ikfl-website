@@ -40,7 +40,7 @@ const create = async (req, res, next) => {
         enquiry = new ComplainModel(enquiry);
         enquiry = await enquiry.save();
           
-        if (enquiry.email) {
+        if (enquiry.email || process.env.ADMIN_MAIL) {
          
             let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/complainMail.ejs'), 'utf8')),
                 dataToCompile = {
@@ -55,14 +55,33 @@ const create = async (req, res, next) => {
                 };
 
             await mail.sendMail([process.env.ADMIN_MAIL], `You have new complain #${enquiry.complainId}`, compiled(dataToCompile));
+            if(enquiry.email){
             await mail.sendMail([enquiry.email], `Your Complain is ID #${enquiry.complainId}`, compiled(dataToCompile));
+                }
         }
 
+        var args = {
+            "flow_id": "63284651aa2eb70ea4747534",
+            "sender": "KISANT",
+            "mobiles": req.body.number, 
+            "name":req.body.name,
+            "id":enquiry.complainId,
+            "url":"websiteurl",
+            "short_url": 1
+          };
+          
+       
+        
+          msg91.sendSMS(args, function(err, response){
+            return res.status(200).send({
+                status: CONSTANT.REQUESTED_CODES.SUCCESS,
+                result: enquiry
+            });
+            
+          });
+          
 
-        return res.status(200).send({
-            status: CONSTANT.REQUESTED_CODES.SUCCESS,
-            result: enquiry
-        });
+       
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
     }
