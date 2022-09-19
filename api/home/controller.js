@@ -817,6 +817,39 @@ const verifyOtp = async (req, res, next) => {
     }
 }
 
+const sentMessage = async (req, res, next) => {
+    let sendOtp = req.body;
+    let randomNumber = await UTILS.getRandomNumber();
+    try {
+        const schema = Joi.object({
+            number: Joi.number().required(),
+        });
+
+        const { error } = schema.validate(sendOtp);
+        if (error) return res.status(400).json({ error });
+
+        var args = {
+            "flow_id": "6319a189aed1b13a913072a6",
+            "sender": "KISANT",
+            "mobiles": sendOtp.number, 
+            "message": "this is test message",
+            "short_url": 1
+          };
+          
+       
+        
+          msg91.sendSMS(args, function(err, response){
+              if(response.type == 'success') return res.status(200).send({result :"Message sent successfully",status: CONSTANT.REQUESTED_CODES.SUCCESS})
+            
+          });
+          
+          
+   
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+}
+
 
 module.exports = {
     create,
@@ -844,5 +877,6 @@ module.exports = {
     updateloanSlider,
     removeloanSlider,
     sentOtp,
-    verifyOtp
+    verifyOtp,
+    sentMessage
 };
