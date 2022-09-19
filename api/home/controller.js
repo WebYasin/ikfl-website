@@ -892,7 +892,28 @@ const saveapply = async (req, res, next) => {
         return res.status(400).json(UTILS.errorHandler(error));
     }
 }
+//////////////////////
 
+
+
+
+
+const getApplyData = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        delete query.pagination;
+        delete query.limit;
+        let docs = await ApplyModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        .populate('state', '_id name').populate('loanApplied','_id name');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+/////////
 module.exports = {
     create,
     get,
@@ -921,5 +942,6 @@ module.exports = {
     sentOtp,
     verifyOtp,
     saveapply,
-    sentMessage
+    sentMessage,
+    getApplyData
 };

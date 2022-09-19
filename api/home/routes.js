@@ -42,4 +42,5 @@ router.post('/sentMessage',                                         HomeControll
 
 router.post('/saveapply',                                             HomeController.saveapply);
 
+router.get('/getApplyData',                                          HomeController.getApplyData);
 module.exports = router;

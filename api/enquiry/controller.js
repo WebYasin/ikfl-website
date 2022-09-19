@@ -15,7 +15,7 @@ const create = async (req, res, next) => {
             name: Joi.string().required(),
             phone: Joi.string().required(),
             email: Joi.string().email().required(),
-            product:Joi.string().required(),
+            product:Joi.string().empty(),
             concern: Joi.string().empty(''),
             active: Joi.boolean()
         });
@@ -57,6 +57,7 @@ const update = async (req, res, next) => {
         const schema = Joi.object({
             name: Joi.string().required(),
             phone: Joi.string().required(),
+            product:Joi.string().empty(),
             email: Joi.string().email().required(),
             concern: Joi.string().required(),
             active: Joi.boolean()

@@ -73,11 +73,13 @@ const get = async (req, res, next) => {
         const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let where = {};
-        if (req.query.id) where._id = req.query.id;
-     
-        let docs = await ComplainModel.find(where).sort({createdAt: -1}).limit(limit).skip(pagination*limit);
-       
-        return res.status(200).send({ result: docs,where: req.query.id });
+        if (req.query._id) where._id = req.query._id;
+        let record ={ };
+        console.log(req.query._id)
+         record.complain = await ComplainModel.find(where);
+         record.history = await ComplainStatus.find({complainId: {$in :record.complain.map(e => new RegExp(e._id,'i'))}}).sort({createdAt: -1});
+        
+        return res.status(200).send({ result: record ,status: CONSTANT.REQUESTED_CODES.SUCCESS,});
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
     }
