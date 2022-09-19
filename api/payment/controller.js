@@ -15,10 +15,11 @@ const create = async (req, res, next) => {
     try {
         const schema = Joi.object({
             loanappid: Joi.string().required(),
-            transaction: Joi.string().required(),
+            transaction: Joi.string(),
             paymentType: Joi.string().required(),
             amount: Joi.number().required(),
             name: Joi.string().required(),
+            email: Joi.string().required(),
             phone: Joi.number().required(),
             status: Joi.number().empty(''),
             files: Joi.array()
@@ -57,17 +58,11 @@ const get = async (req, res, next) => {
 
 const update = async (req, res, next) => {
     try {
-        if (!req.params.id) return res.status(400).json({ error: "complain id is required" });
-        let about = await FILE_UPLOAD.uploadMultipleFile(req);
+        if (!req.params.id) return res.status(400).json({ error: "Payment id is required" });
+        let payment = req.body;
         const schema = Joi.object({
-            loanappid: Joi.string().required(),
-            name: Joi.string().required(),
-            phone: Joi.string().required(),
-            email: Joi.string().email().required(),
-            concern: Joi.string().empty(''),
-            status: Joi.string().empty(''),
-            active: Joi.number().empty(''),
-            files: Joi.array()
+            razorpay:Joi.string().required,
+            status: Joi.number().required,
         });
 
         const { error } = schema.validate(req.body);
@@ -78,10 +73,10 @@ const update = async (req, res, next) => {
      
         let aboutData = await PaymentModel.updateOne({ _id: req.params.id }, {$set: req.body});
        
-        if (!aboutData) return res.status(400).json({ error: "complain update failed" });
+        if (!aboutData) return res.status(400).json({ error: "Payment update failed" });
         return res.status(201).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
-            result: "complain updated succesfully"
+            result: "Payment updated succesfully"
         });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
