@@ -39,4 +39,6 @@ router.post('/verifyOtp',                                           HomeControll
 
 
 
+router.post('/saveapply',                                             HomeController.saveapply);
+
 module.exports = router;

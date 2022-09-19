@@ -16,6 +16,7 @@ const { HomeModel,
     MetaModel,
     VisionModel,
     TestimonialModel,
+    ApplyModel,
     OtpModel }                      = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
@@ -818,6 +819,47 @@ const verifyOtp = async (req, res, next) => {
 }
 
 
+/////////////////////////
+const saveapply = async (req, res, next) => {
+    let apply = await FILE_UPLOAD.uploadMultipleFile(req);
+    apply.active = true;
+    
+    try {
+        const schema = Joi.object({
+            firstName: Joi.string().required(),
+            LastName: Joi.string().required(),
+            mobile: Joi.number().required(),
+            email: Joi.string().required(),
+            addrress: Joi.string().empty(''),
+            state: Joi.string().required(''),
+            city: Joi.string().empty(''),
+            occupation: Joi.string().empty(''),
+            loanApplied: Joi.string().empty(''),
+            files: Joi.array(),
+            active: Joi.boolean(),
+            customFields: Joi.object()
+        });
+
+        const { error } = schema.validate(apply);
+        if (error) return res.status(400).json({ error });
+
+        let files = apply.files;
+        if (files.length) {
+            apply.files = files.filter(e => e.fieldName == 'file').map(file => file._id);
+        } else delete apply.files;
+        
+        apply = new ApplyModel(apply);
+        apply = await apply.save();
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: apply
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+}
+
 module.exports = {
     create,
     get,
@@ -844,5 +886,6 @@ module.exports = {
     updateloanSlider,
     removeloanSlider,
     sentOtp,
-    verifyOtp
+    verifyOtp,
+    saveapply
 };

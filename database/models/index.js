@@ -59,5 +59,6 @@ module.exports = {
     PaymentModel:                       require('./paymentmodel'),
     ComplainStatus:                     require('./complainquerystatus'),
     CareerEnquiryModel:                 require('./careerenquirymodle'),
-    StateModel:                         require('./statemodel')
+    StateModel:                         require('./statemodel'),
+    ApplyModel:                         require('./applymodel')
 }
