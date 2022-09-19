@@ -338,7 +338,7 @@ const getState = async (req, res, next) => {
         delete query.pagination;
         delete query.limit;
 
-        let docs = await StateModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile');
+        let docs = await StateModel.find(query).sort({name: 1});
         return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
