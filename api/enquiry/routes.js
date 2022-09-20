@@ -9,4 +9,7 @@ router.get('/',                                          EnquiryController.get);
 router.put('/:id',         Auth.isAuthenticated(),       EnquiryController.update);
 router.delete('/:id',      Auth.isAuthenticated(),       EnquiryController.remove);
 
+
+router.post('/callEnquiry',                               EnquiryController.createCallEnquiry);
+
 module.exports = router;

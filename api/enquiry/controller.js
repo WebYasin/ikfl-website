@@ -2,7 +2,7 @@
 
 const modelName                     = 'Enquiry';
 const Joi                           = require('@hapi/joi');
-const { EnquiryModel }              = require('@database');
+const { EnquiryModel,CallEnquiryModel }              = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 
@@ -95,9 +95,40 @@ const remove = async (req, res, next) => {
     }
 };
 
+
+const createCallEnquiry = async (req, res, next) => {
+    let enquiry = req.body || {};
+    enquiry.active = true;
+
+    try {
+        const schema = Joi.object({
+            name: Joi.string().required(),
+            phone: Joi.string().required(),
+            product:Joi.string().empty(),
+            concern: Joi.string().empty(''),
+            active: Joi.boolean()
+        });
+
+        const { error } = schema.validate(enquiry);
+        if (error) return res.status(400).json({ error });
+
+        enquiry = new CallEnquiryModel(enquiry);
+        enquiry = await enquiry.save();
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: enquiry
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+}
+
+
 module.exports = {
     create,
     get,
     update,
-    remove
+    remove,
+    createCallEnquiry
 };

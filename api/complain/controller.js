@@ -93,7 +93,6 @@ const get = async (req, res, next) => {
         let where = {};
         if (req.query._id) where._id = req.query._id;
         let record ={ };
-        console.log(req.query._id)
          record.complain = await ComplainModel.find(where);
          record.history = await ComplainStatus.find({complainId: {$in :record.complain.map(e => new RegExp(e._id,'i'))}}).sort({createdAt: -1});
         
