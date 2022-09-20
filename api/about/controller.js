@@ -94,8 +94,8 @@ const get = async (req, res, next) => {
         .populate('file', 'name original path thumbnail smallFile')
         .populate('blog', 'name original path thumbnail smallFile');
        
-        record.directorList     = await TeamModel.find({status:1,type:1}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile');
-        record.teamList     = await TeamModel.find({status:1,type:2}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile');
+        record.directorList     = await TeamModel.find({status:1,type:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile');
+        record.teamList     = await TeamModel.find({status:1,type:2}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile');
 
         record.visionList   = await VisionModel.find({status:1,show_value:0}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
 
@@ -691,7 +691,7 @@ const getCharges = async (req, res, next) => {
         delete query.pagination;
         delete query.limit;
 
-        let docs = await ChargesModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile');
+        let docs = await ChargesModel.find(query).sort({createdAt: 1});
         return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));

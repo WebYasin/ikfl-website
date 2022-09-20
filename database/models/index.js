@@ -61,5 +61,6 @@ module.exports = {
     CareerEnquiryModel:                 require('./careerenquirymodle'),
     StateModel:                         require('./statemodel'),
     ApplyModel:                         require('./applymodel'),
-    CallEnquiryModel:                   require('./callenquirymodel')
+    CallEnquiryModel:                   require('./callenquirymodel'),
+    PageModel:                          require('./pagemodel')
 }

@@ -134,9 +134,9 @@ const getCustomerSection = async (req, res, next) => {
    
         record.downloadList = await DownloadModel.find({status:1}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile');
 
-        record.testimonials = await TestimonialModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
+        record.testimonials = await TestimonialModel.find({status:1}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
 
-        record.sheduleCharges = await ChargesModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile');
+        record.sheduleCharges = await ChargesModel.find({status:1}).sort({sort_order: 1});
       
         record.setting = await SettingModel.find(query).sort({ createdAt: -1 })
         .populate('logo', 'name original path thumbnail smallFile')

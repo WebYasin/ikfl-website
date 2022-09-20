@@ -594,7 +594,7 @@ const getPolicyData = async (req, res, next) => {
             }},
         //    { "$unwind": "$policyDetails" },
           { $skip: (pagination*limit) },
-          { $sort : { createdAt: -1} },
+          { $sort : { sort_order: 1} },
           { $limit: limit },
          
          ])

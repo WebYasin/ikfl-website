@@ -649,16 +649,16 @@ const getCareerData = async (req, res, next) => {
         record.jobsList = await CareerModel.find({status:1}).sort({sort_order: 1})
         .populate('files', 'name original path thumbnail smallFile');
 
-        record.workingList = await WorkingModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        record.workingList = await WorkingModel.find({status:1}).sort({sort_order: 1}).limit(limit).skip(pagination*limit)
         .populate('file', 'name original path thumbnail smallFile');
         
-        record.heading = await CareerHeadingModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        record.heading = await CareerHeadingModel.find({status:1})
         .populate('file', 'name original path thumbnail smallFile');
 
-        record.employeeSpeakList = await EmployeeSpeakModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        record.employeeSpeakList = await EmployeeSpeakModel.find({status:1}).sort({sort_order: 1})
         .populate('file', 'name original path thumbnail smallFile');
 
-        record.benafitsList = await CareerBenafitModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        record.benafitsList = await CareerBenafitModel.find({status:1}).sort({sort_order: 1})
         .populate('file', 'name original path thumbnail smallFile');
 
         record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })

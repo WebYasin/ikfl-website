@@ -41,6 +41,7 @@ module.exports = {
     ComplainController:              require('./complain/controller'),        
     SettingController:                require('./setting/controller.js'),
     OracleController:               require('./oracle/controller'),     
-    PaymentController:              require('./payment/controller.js')
+    PaymentController:              require('./payment/controller.js'),
+    PageController:                 require('./pages/controller')
 
 }

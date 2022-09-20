@@ -49,5 +49,5 @@ router.use('/oracle', require("./oracle/routes"));
 
 router.use('/complain',                    require("./complain/routes"));
 router.use('/payment',                    require("./payment/routes"));
-
+router.use('/pages',                    require("./pages/routes"));
 module.exports = router;
