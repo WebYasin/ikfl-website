@@ -15,8 +15,8 @@ const FileSchema = new mongoose.Schema({
     mimeType: { type: String, required: true },
     description: { type: String, required: false },
     sourceId: { type: String, required: false },
-    createdBy: { type: objectId, ref: 'User' },
-    updatedBy: { type: objectId, ref: 'User' },
+    // createdBy: { type: objectId, ref: 'User',default:" " },
+    // updatedBy: { type: objectId, ref: 'User',default:" " },
     active: { type: Boolean, required: false }
 }, { timestamps: true, versionKey: false });
 
