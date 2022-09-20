@@ -17,6 +17,7 @@ const create = async (req, res, next) => {
             designation: Joi.string().empty(''),
             description: Joi.string().empty(''),
             status: Joi.number().empty(''),
+            sort_order: Joi.number().empty(''),
             files: Joi.array(),
             description:Joi.string(),
             type:Joi.number(),
@@ -67,7 +68,8 @@ const update = async (req, res, next) => {
         let team = await FILE_UPLOAD.uploadMultipleFile(req);
         const schema = Joi.object({
             name: Joi.string().required(),
-            status: Joi.number(),
+            status: Joi.number().empty(''),
+            sort_order: Joi.number().empty(''),
             designation: Joi.string().empty(''),
             description: Joi.string().empty(''),
             files: Joi.array(),
