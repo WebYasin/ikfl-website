@@ -908,7 +908,7 @@ const getApplyData = async (req, res, next) => {
         delete query.pagination;
         delete query.limit;
         let docs = await ApplyModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
-        .populate('state', '_id name').populate('loanApplied','_id name');
+        .populate('state', '_id name ').populate('loanApplied','_id name ');
         return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));

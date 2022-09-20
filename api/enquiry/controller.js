@@ -125,10 +125,26 @@ const createCallEnquiry = async (req, res, next) => {
 }
 
 
+
+const getCallEnquiry = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let where = {};
+        if (req.query.id) where._id = req.query.id;
+     
+        let docs = await CallEnquiryModel.find().sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('product','_id name');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
 module.exports = {
     create,
     get,
     update,
     remove,
-    createCallEnquiry
+    createCallEnquiry,
+    getCallEnquiry
 };

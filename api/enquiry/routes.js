@@ -12,4 +12,7 @@ router.delete('/:id',      Auth.isAuthenticated(),       EnquiryController.remov
 
 router.post('/callEnquiry',                               EnquiryController.createCallEnquiry);
 
+router.get('/getcallenquiry',                             EnquiryController.getCallEnquiry);
+
+
 module.exports = router;

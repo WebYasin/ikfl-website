@@ -9,7 +9,7 @@ const ApplySchema = new mongoose.Schema({
     mobile: { type: Number, required: true },
     email: { type: String, required: true },
     addrress: { type: String, required: false },
-    state: { type: objectId, ref: "state" },
+    state: { type: objectId, ref: "states" },
     city: { type: String, required: false },
     file: { type: objectId, ref: 'File' },
     occupation: { type: String, required: false},
