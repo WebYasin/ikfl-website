@@ -13,4 +13,4 @@ const StateSchema = new mongoose.Schema({
     customFields: { type: Object, default: {} },
 }, { timestamps: true, versionKey: false });
 
-module.exports = mongoose.model('state', StateSchema);
+module.exports = mongoose.model('states', StateSchema);
