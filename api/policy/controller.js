@@ -52,7 +52,7 @@ const create = async (req, res, next) => {
 
 const get = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         delete query.pagination;
@@ -502,7 +502,7 @@ const createFaqs = async (req, res, next) => {
 
 const getFaqs = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         delete query.pagination;
@@ -575,7 +575,7 @@ const removeFaqs = async (req, res, next) => {
 
 const getPolicyData = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         delete query.pagination;

@@ -49,14 +49,14 @@ const create = async (req, res, next) => {
 
 const get = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         if (query.name) query.name = new RegExp(query.name, "i");
         delete query.pagination;
         delete query.limit;
 
-        let docs = await TeamModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile');
+        let docs = await TeamModel.find(query).sort({sort_order: 1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile');
         return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));

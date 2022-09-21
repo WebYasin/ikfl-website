@@ -74,6 +74,7 @@ const CreateEnquiry = async (req, res, next) => {
             email: Joi.string().empty(''),
             files: Joi.array(),
             phone: Joi.string().empty(''),
+            appliedFor: Joi.string().empty(''),
             jobs: Joi.string().empty(''),
             state: Joi.string().empty(''),
             city: Joi.string().empty(''),
@@ -95,15 +96,17 @@ const CreateEnquiry = async (req, res, next) => {
             let enq = await CareerEnquiryModel.find({_id:career._id}).populate('file', 'name original path thumbnail smallFile').populate('jobs','_id name').populate('state','_id name');
           
             let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/careerenquiry.ejs'), 'utf8')),
-            dataToCompile = {
-                name:enq[0].name,
-                email:enq[0].email,
-                phone:enq[0].phone,
-                jobs:enq[0].jobs.name,
-                state:enq[0].state.name,
-                city:enq[0].city,        
-                               
-            };
+               
+                dataToCompile = {
+                    name:enq[0].name,
+                    email:enq[0].email,
+                    phone:enq[0].phone,
+                    ...(enq[0].jobs && {jobs:enq[0].jobs.name}),
+                    ...(career.appliedFor && {appliedFor:enq[0].appliedFor}),
+                    state:enq[0].state.name,
+                    city:enq[0].city,        
+                                   
+                };                                                        
         
         await mail.sendMail([process.env.CAREER_MAIL], `You have new Career Enquiry `, compiled(dataToCompile));
         }
@@ -125,7 +128,7 @@ const CreateEnquiry = async (req, res, next) => {
 
 const GetCareerEnquiry = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         delete query.pagination;

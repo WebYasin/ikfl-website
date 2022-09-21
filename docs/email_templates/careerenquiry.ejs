@@ -42,11 +42,14 @@
         <p>Full Name : <span style="padding-left: 10px;"><%=name%></span></p>
         <p>Email Address: <span style="padding-left: 10px;"><%=email%></span></p>
         <p>Contact Number : <span style="padding-left: 10px;"><%=phone%></span></p>
-        <% if (jobs) { %>
+         
+           <% if (typeof jobs !='undefined') { %>
             <p>Apply Jobs : <span style="padding-left: 10px;"><%=jobs%></span></p>
             <% } %>
 
-        
+            <% if (typeof appliedFor !='undefined') { %>
+                <p>Apply For : <span style="padding-left: 10px;"><%=appliedFor%></span></p>
+                <% } %>
             
             <% if (state) { %>
                 <p>State : <span style="padding-left: 10px;"><%=state%></span></p>

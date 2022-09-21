@@ -422,6 +422,7 @@ const createAddress = async (req, res, next) => {
             location: Joi.string().required(),
             title: Joi.string().required(),
             description: Joi.string().empty(''),
+            link: Joi.string().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -451,7 +452,7 @@ const createAddress = async (req, res, next) => {
 
 const getAddress = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         if (query.name) query.name = new RegExp(query.name, "i");
@@ -474,6 +475,7 @@ const updateAddress = async (req, res, next) => {
             location: Joi.string().required(),
             title: Joi.string().required(),
             description: Joi.string().empty(''),
+            link: Joi.string().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),

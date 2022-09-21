@@ -79,9 +79,9 @@ const get = async (req, res, next) => {
     try {
         const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
-        const rating = req.query.rating;
         let query = req.query;
-        if (req.query.category) query['category'] = { $in: req.query.category.split(",") };
+        if(req.query.status) query.status = req.query.status;
+        // if (req.query.category) query['category'] = { $in: req.query.category.split(",") };
         // if (req.query.minPrice && req.query.maxPrice) query['price'] = {$gte: parseInt(req.query.minPrice), $lte: parseInt(req.query.maxPrice)};
         // if (query.search) {
         //     query['$or'] = [
