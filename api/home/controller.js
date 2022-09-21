@@ -886,6 +886,26 @@ const saveapply = async (req, res, next) => {
         apply = new ApplyModel(apply);
         apply = await apply.save();
 
+        if(apply.firstName){
+            let enq = await ApplyModel.find({_id:apply._id}).populate('state', '_id name ').populate('loanApplied','_id name ');
+          
+            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/applyonline.ejs'), 'utf8')),
+            dataToCompile = {
+                firstName:enq.firstName,
+                LastName:enq.LastName,
+                mobile:enq.mobile,
+                email:enq.email,
+                addrress:enq.addrress,
+                state:enq.state.name,
+                city:enq.city,
+                occupation:enq.occupation,
+                product:enq.loanApplied.name,
+                               
+            };
+
+        await mail.sendMail([process.env.ADMIN_MAIL], `You have new Apply Online Enquiry `, compiled(dataToCompile));
+        }
+
         return res.status(200).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
             result: apply

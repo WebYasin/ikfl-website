@@ -115,6 +115,19 @@ const createCallEnquiry = async (req, res, next) => {
         enquiry = new CallEnquiryModel(enquiry);
         enquiry = await enquiry.save();
 
+        if(enquiry.name){
+            let enq = await CallEnquiryModel.find({_id:enquiry._id}).populate('product','_id name');
+          
+            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/callenquiry.ejs'), 'utf8')),
+            dataToCompile = {
+                name:enq.name,
+                phone:enq.phone,
+                product:enq.product.name               
+            };
+
+        await mail.sendMail([process.env.ADMIN_MAIL], `You have new Get a Call Enquiry `, compiled(dataToCompile));
+        }
+
         return res.status(200).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
             result: enquiry
