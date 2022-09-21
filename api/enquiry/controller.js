@@ -5,6 +5,10 @@ const Joi                           = require('@hapi/joi');
 const { EnquiryModel,CallEnquiryModel }              = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
+const ejs                           = require('ejs');
+const fs                            = require('fs');
+const path                          = require('path');
+const mail                          = require('@lib/mailer');
 
 const create = async (req, res, next) => {
     let enquiry = req.body || {};
@@ -25,6 +29,25 @@ const create = async (req, res, next) => {
 
         enquiry = new EnquiryModel(enquiry);
         enquiry = await enquiry.save();
+
+        if(enquiry.name){
+            let enq = await EnquiryModel.find({_id:enquiry._id});
+          
+            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/contactenquiry.ejs'), 'utf8')),
+            dataToCompile = {
+                name:enq[0].name,
+                email:enq[0].email,
+                phone:enq[0].phone,
+                concern:enq[0].concern,
+                         
+            };
+        
+        await mail.sendMail([process.env.ADMIN_MAIL], `You have new Contact Enquiry `, compiled(dataToCompile));
+        }
+
+
+
+
 
         return res.status(200).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
@@ -117,15 +140,15 @@ const createCallEnquiry = async (req, res, next) => {
 
         if(enquiry.name){
             let enq = await CallEnquiryModel.find({_id:enquiry._id}).populate('product','_id name');
-          
+         
             let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/callenquiry.ejs'), 'utf8')),
             dataToCompile = {
-                name:enq.name,
-                phone:enq.phone,
-                product:enq.product.name               
+                name:enq[0].name,
+                phone:enq[0].phone,
+                product:enq[0].product.name               
             };
-
-        await mail.sendMail([process.env.ADMIN_MAIL], `You have new Get a Call Enquiry `, compiled(dataToCompile));
+          
+        await mail.sendMail([process.env.ENQUIRY_MAIL], `You have new Get a Call Enquiry `, compiled(dataToCompile));
         }
 
         return res.status(200).send({

@@ -39,17 +39,14 @@
    
     <p style="padding-left: 25px; padding-top: 10px;">
      
-        <p>First Name : <span style="padding-left: 10px;"><%=firstName%></span></p>
-        <p>Last Name : <span style="padding-left: 10px;"><%=LastName%></span></p>
+        <p>Full Name : <span style="padding-left: 10px;"><%=name%></span></p>
         <p>Email Address: <span style="padding-left: 10px;"><%=email%></span></p>
-        <p>Contact Number : <span style="padding-left: 10px;"><%=mobile%></span></p>
-        <% if (product) { %>
-            <p>Product : <span style="padding-left: 10px;"><%=product%></span></p>
+        <p>Contact Number : <span style="padding-left: 10px;"><%=phone%></span></p>
+        <% if (jobs) { %>
+            <p>Apply Jobs : <span style="padding-left: 10px;"><%=jobs%></span></p>
             <% } %>
 
-        <% if (addrress) { %>
-            <p>Address : <span style="padding-left: 10px;"><%=addrress%></span></p>
-            <% } %>
+        
             
             <% if (state) { %>
                 <p>State : <span style="padding-left: 10px;"><%=state%></span></p>
@@ -57,11 +54,9 @@
                 
                 <% if (city) { %>
                     <p>city  : <span style="padding-left: 10px;"><%=city%></span></p>
-                    <% } %>        
+                    <% } %>     
         
-        <% if (occupation) { %>
-        <p>Occupation : <span style="padding-left: 10px;"><%=occupation%></span></p>
-        <% } %>
+      
     </p>
 </body>
 </html>

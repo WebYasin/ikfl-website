@@ -77,7 +77,7 @@ const create = async (req, res, next) => {
 
 const get = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         const rating = req.query.rating;
         let query = req.query;
@@ -93,23 +93,16 @@ const get = async (req, res, next) => {
         // delete query.search;
         delete query.pagination;
         delete query.limit;
-        // delete query.minPrice;
-        // delete query.maxPrice;
-
-
+  
         const productsCount = await ProductModel.countDocuments(query);
 
         let docs = await ProductModel.find(query).sort({ createdAt: -1 })
             .limit(limit).skip(pagination * limit)
-            .populate('attributes.attributeId', 'name')
             .populate('file', 'name original path thumbnail smallFile')
             .populate('blog', 'name original path thumbnail smallFile')
             .populate('banner_img', 'name original path thumbnail smallFile')
             .populate('eligible_img', 'name original path thumbnail smallFile')
-            .populate('insurance_img', 'name original path thumbnail smallFile')
-            .populate('category', '_id name')
-            .populate('subCategory', '_id name');
-
+            .populate('insurance_img', 'name original path thumbnail smallFile');
 
         return res.status(200).send({ result: docs, count: productsCount });
     } catch (error) {

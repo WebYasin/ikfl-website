@@ -16,7 +16,10 @@ const {
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 const FILE_UPLOAD                   = require('@lib/file_upload');
-
+const ejs                           = require('ejs');
+const fs                            = require('fs');
+const path                          = require('path');
+const mail                          = require('@lib/mailer');
 
 const create = async (req, res, next) => {
     let career = await FILE_UPLOAD.uploadMultipleFile(req);
@@ -87,6 +90,27 @@ const CreateEnquiry = async (req, res, next) => {
         career = new CareerEnquiryModel(career);
         career = await career.save();
 
+
+        if(career.name){
+            let enq = await CareerEnquiryModel.find({_id:career._id}).populate('file', 'name original path thumbnail smallFile').populate('jobs','_id name').populate('state','_id name');
+          
+            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/careerenquiry.ejs'), 'utf8')),
+            dataToCompile = {
+                name:enq[0].name,
+                email:enq[0].email,
+                phone:enq[0].phone,
+                jobs:enq[0].jobs.name,
+                state:enq[0].state.name,
+                city:enq[0].city,        
+                               
+            };
+        
+        await mail.sendMail([process.env.CAREER_MAIL], `You have new Career Enquiry `, compiled(dataToCompile));
+        }
+
+
+
+
         return res.status(200).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
             result: career
@@ -119,7 +143,7 @@ const GetCareerEnquiry = async (req, res, next) => {
 
 const get = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         delete query.pagination;

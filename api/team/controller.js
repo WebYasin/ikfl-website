@@ -16,6 +16,8 @@ const create = async (req, res, next) => {
             name: Joi.string().required(),
             designation: Joi.string().empty(''),
             description: Joi.string().empty(''),
+            description: Joi.string().empty(''),
+            link: Joi.string().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -72,6 +74,7 @@ const update = async (req, res, next) => {
             sort_order: Joi.number().empty(''),
             designation: Joi.string().empty(''),
             description: Joi.string().empty(''),
+            link: Joi.string().empty(''),
             files: Joi.array(),
             type:Joi.number(),
             customFields: Joi.object()

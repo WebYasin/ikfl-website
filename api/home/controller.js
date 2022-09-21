@@ -24,6 +24,11 @@ const FILE_UPLOAD                   = require('@lib/file_upload');
 const { result }                    = require('@hapi/joi/lib/base');
 const msg91                         = require("msg91-api")("343914ABecqB83V6bZ63199dfeP1");
 const moment                        = require('moment');
+const ejs                           = require('ejs');
+const fs                            = require('fs');
+const path                          = require('path');
+const mail                          = require('@lib/mailer');
+
 const create = async (req, res, next) => {
  
     let home = await FILE_UPLOAD.uploadMultipleFile(req);
@@ -535,7 +540,6 @@ const getParters = async (req, res, next) => {
 
 const createPartner = async (req, res, next) => {
     let homepartner = await FILE_UPLOAD.uploadMultipleFile(req);
-    homepartner.status = req.status;
     
     try {
         const schema = Joi.object({
@@ -624,10 +628,10 @@ const removePartner = async (req, res, next) => {
         const { error } = schema.validate(req.params);
         if (error) return res.status(400).json({ error });
 
-        await HomeBannerModel.deleteOne({ _id: req.params.id });
+        await HomePartnerModel.deleteOne({ _id: req.params.id });
         return res.status(200).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
-            result: "Home Benafits Deleted succesfully" 
+            result: "Partner Deleted succesfully" 
         });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
@@ -891,19 +895,19 @@ const saveapply = async (req, res, next) => {
           
             let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/applyonline.ejs'), 'utf8')),
             dataToCompile = {
-                firstName:enq.firstName,
-                LastName:enq.LastName,
-                mobile:enq.mobile,
-                email:enq.email,
-                addrress:enq.addrress,
-                state:enq.state.name,
-                city:enq.city,
-                occupation:enq.occupation,
-                product:enq.loanApplied.name,
+                firstName:enq[0].firstName,
+                LastName:enq[0].LastName,
+                mobile:enq[0].mobile,
+                email:enq[0].email,
+                addrress:enq[0].addrress,
+                state:enq[0].state.name,
+                city:enq[0].city,
+                occupation:enq[0].occupation,
+                product:enq[0].loanApplied.name,
                                
             };
-
-        await mail.sendMail([process.env.ADMIN_MAIL], `You have new Apply Online Enquiry `, compiled(dataToCompile));
+        
+        await mail.sendMail([process.env.ENQUIRY_MAIL], `You have new Apply Online Enquiry `, compiled(dataToCompile));
         }
 
         return res.status(200).send({

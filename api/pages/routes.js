@@ -9,5 +9,5 @@ router.get('/',            Auth.isAuthenticated(),       PageController.get);
 router.put('/:id',          Auth.isAuthenticated(),      PageController.update);
 router.delete('/:id',      Auth.isAuthenticated(),       PageController.remove);
 
-router.get('/getpagedetail',            Auth.isAuthenticated(),       PageController.getPageDetail);
+router.get('/getpagedetail',                              PageController.getPageDetail);
 module.exports = router;
