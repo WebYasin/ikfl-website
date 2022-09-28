@@ -590,18 +590,20 @@ const getPolicyData = async (req, res, next) => {
                   from: "policies",
                   localField: "_id",
                   foreignField: "category",
-                  as: "policyDetails"
-            }},
-        //    { "$unwind": "$policyDetails" },
-          { $skip: (pagination*limit) },
+                  as: "policyDetails",                  
+            },                    
+        },
+        
+        //    { $file: "policyDetails" },
+        //   { $skip: (pagination*limit) },
           { $sort : { sort_order: 1} },
-          { $limit: limit },
+          
+        //   { $limit: limit },
          
-         ])
+         ]);    
 
         // record.policyList = await PolicyModel.find({status:1}).sort({sort_order: 1})
         // .populate('file', 'name original path thumbnail smallFile').populate('category','_id name');
-
 
       
         record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
@@ -619,6 +621,37 @@ const getPolicyData = async (req, res, next) => {
         return res.status(400).json(UTILS.errorHandler(error));
     }
 };
+
+
+
+const getPolicyCategories = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+
+        let docs = await PolicyCategoryModel.find({status:1}).sort({sort_order: 1}).limit(limit).skip(pagination*limit);
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
+
+const getPolicyList = async (req, res, next) => {
+    try {
+       
+        let query = req.query;
+            
+        let docs = await PolicyModel.find(query).sort({sort_order: 1}).populate('file','name original path thumbnail smallFile');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
 
 ////////////////////////
 module.exports = {
@@ -642,5 +675,7 @@ module.exports = {
     createFaqs,
     updateFaqs,
     removeFaqs,
-    getPolicyData
+    getPolicyData,
+    getPolicyCategories,
+    getPolicyList
 };

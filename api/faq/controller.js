@@ -49,7 +49,7 @@ const get = async (req, res, next) => {
                   as: "faqDetails"
             }},
           { $skip: (pagination*limit) },
-          { $sort : { createdAt: -1} },
+          { $sort : { sort_order: 1} },
           { $limit: limit },
          
          ])

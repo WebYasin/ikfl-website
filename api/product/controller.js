@@ -96,7 +96,7 @@ const get = async (req, res, next) => {
   
         const productsCount = await ProductModel.countDocuments(query);
 
-        let docs = await ProductModel.find(query).sort({ createdAt: -1 })
+        let docs = await ProductModel.find(query).sort({ sort_order: 1 })
             .limit(limit).skip(pagination * limit)
             .populate('file', 'name original path thumbnail smallFile')
             .populate('blog', 'name original path thumbnail smallFile')

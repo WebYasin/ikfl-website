@@ -2,7 +2,7 @@
 
 const modelName                     = 'pages';
 const Joi                           = require('@hapi/joi');
-const { PageModel   }       = require('@database');
+const { PageModel,SettingModel   }       = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 const FILE_UPLOAD               = require('@lib/file_upload');
@@ -115,10 +115,15 @@ const getPageDetail = async (req, res, next) => {
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let where = {};
         if (req.query._id) where.keyword = req.query.page;
-     
-        let docs = await PageModel.find(where).sort({createdAt: -1});
+        let record = { };
+        record.heading = await PageModel.find(where).sort({createdAt: -1});
+        record.setting = await SettingModel.find().sort({ createdAt: -1 })
+        .populate('logo', 'name original path thumbnail smallFile')
+        .populate('footer_logo', 'name original path thumbnail smallFile')
+        .populate('favicon', 'name original path thumbnail smallFile')
+        .populate('default_logo', 'name original path thumbnail smallFile');
        
-        return res.status(200).send({ result: docs });
+        return res.status(200).send({ result: record });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
     }

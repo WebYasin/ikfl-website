@@ -10,6 +10,7 @@ const CareerEnquirySchema = new mongoose.Schema({
     file: [{ type: objectId, ref: 'File' }],
     jobs: { type: objectId,ref: 'career' , required: false},
     appliedFor: { type: String,required: false, default: "" },
+    type: { type: String,required: false, default: "" },
     state: { type: objectId,ref: 'states' },
     city: { type: String, default: false },
     createdBy: { type: objectId, ref: 'User' },

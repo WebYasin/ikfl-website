@@ -75,6 +75,7 @@ const CreateEnquiry = async (req, res, next) => {
             files: Joi.array(),
             phone: Joi.string().empty(''),
             appliedFor: Joi.string().empty(''),
+            type: Joi.string().empty(''),
             jobs: Joi.string().empty(''),
             state: Joi.string().empty(''),
             city: Joi.string().empty(''),

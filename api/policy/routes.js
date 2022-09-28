@@ -33,6 +33,7 @@ router.post('/faqs',            Auth.isAuthenticated(),       PolicyController.c
 router.put('/faqs/:id',         Auth.isAuthenticated(),       PolicyController.updateFaqs);
 router.delete('/faqs/:id',      Auth.isAuthenticated(),       PolicyController.removeFaqs);
 
-router.get('/getData',                                          PolicyController.getPolicyData);
-
+router.get('/getData',                                         PolicyController.getPolicyData);
+router.get('/getPolicyCategory',                              PolicyController.getPolicyCategories);
+router.get('/getPolicyList',                              PolicyController.getPolicyList);
 module.exports = router;

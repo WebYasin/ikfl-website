@@ -43,7 +43,7 @@ const create = async (req, res, next) => {
           
         if (enquiry.email || process.env.ADMIN_MAIL) {
          
-            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/complainMail.ejs'), 'utf8')),
+            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/complainMail.ejs'), 'utf8')),      
                 dataToCompile = {
                     loanappid:enquiry.loanappid,
                     email: enquiry.email,
@@ -57,7 +57,19 @@ const create = async (req, res, next) => {
 
             await mail.sendMail([process.env.ADMIN_MAIL], `You have new complain #${enquiry.complainId}`, compiled(dataToCompile));
             if(enquiry.email){
-            await mail.sendMail([enquiry.email], `Your Complain is ID #${enquiry.complainId}`, compiled(dataToCompile));
+            let complainMailCustomer = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/complainMailCustomer.ejs'), 'utf8')),
+                dataToCompile = {
+                    loanappid:enquiry.loanappid,
+                    email: enquiry.email,
+                    phone:enquiry.phone,
+                    concern:enquiry.concern,
+                    userName: enquiry.name,
+                    address:enquiry.address,
+                    state:enquiry.state,
+                    pin:enquiry.pin,
+                };
+
+            await mail.sendMail([enquiry.email], `Your Interaction with Kisan Finance | ID#${enquiry.complainId}`, complainMailCustomer(dataToCompile));
                 }
         }
 
@@ -88,12 +100,12 @@ const create = async (req, res, next) => {
 
 const get = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let where = {};
         if (req.query._id) where._id = req.query._id;
         let record ={ };
-         record.complain = await ComplainModel.find(where);
+         record.complain = await ComplainModel.find(where).sort({createdAt: -1}).limit(limit).skip(pagination*limit);
          record.history = await ComplainStatus.find({complainId: {$in :record.complain.map(e => new RegExp(e._id,'i'))}}).sort({createdAt: -1});
         
         return res.status(200).send({ result: record ,status: CONSTANT.REQUESTED_CODES.SUCCESS,});
