@@ -14,6 +14,7 @@ const create = async (req, res, next) => {
         const schema = Joi.object({
             title: Joi.string().required(),
             slug :Joi.string().empty(''),
+            link :Joi.string().empty(''),
             shortDescription: Joi.string().empty(''),
             show_latest: Joi.number().empty(''),
             files: Joi.array(),
@@ -72,6 +73,7 @@ const update = async (req, res, next) => {
         const schema = Joi.object({
             title: Joi.string().required(),
             slug :Joi.string().empty(''),
+            link :Joi.string().empty(''),
             shortDescription: Joi.string().empty(''),
             show_latest: Joi.number().empty(''),
             files: Joi.array(),

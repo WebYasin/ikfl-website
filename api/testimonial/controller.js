@@ -10,13 +10,15 @@ const FILE_UPLOAD               = require('@lib/file_upload');
 
 const create = async (req, res, next) => {
     let testimonial = await FILE_UPLOAD.uploadMultipleFile(req);
-    testimonial.status = req.status;
+
     try {
         const schema = Joi.object({
-            name: Joi.string().required(),
+            name: Joi.string().empty(''),
+            youtube: Joi.string().empty(''),
+            page: Joi.string().empty(''),
             designation: Joi.string().empty(''),
-            status: Joi.number(),
-            sort_order: Joi.number(),
+            status: Joi.number().empty(''),
+            sort_order: Joi.number().empty(''),
             files: Joi.array(),
             description:Joi.string().empty(''),
             customFields: Joi.object()
@@ -67,10 +69,12 @@ const update = async (req, res, next) => {
         if (!req.params.id) return res.status(400).json({error: "Testimonial id is required"});
         let testimonial = await FILE_UPLOAD.uploadMultipleFile(req);
         const schema = Joi.object({
-            name: Joi.string().required(),
-            status: Joi.number(),
-            sort_order: Joi.number(),
+            name: Joi.string().empty(''),
+            youtube: Joi.string().empty(''),
+            page: Joi.string().empty(''),
             designation: Joi.string().empty(''),
+            status: Joi.number().empty(''),
+            sort_order: Joi.number().empty(''),
             files: Joi.array(),
             description:Joi.string().empty(''),
             customFields: Joi.object()

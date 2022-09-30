@@ -88,11 +88,11 @@ const get = async (req, res, next) => {
         delete query.limit;
         let record = { };
         record.homeHeading       = await HomeModel.find({status:1}).sort({createdAt: -1}).populate('benafitImage', 'name original path thumbnail smallFile').populate('testimonialImage', 'name original path thumbnail smallFile');
-        record.products    = await ProductModel.find({status:1, show_home: 1}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile').populate('blog', 'name original path thumbnail smallFile').populate('carcass', 'name original path thumbnail smallFile').populate('coverPhoto', 'name original path thumbnail smallFile');
-        record.homeBanners   = await HomeBannerModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
+        record.products    = await ProductModel.find({status:1, show_home: 1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile').populate('blog', 'name original path thumbnail smallFile').populate('carcass', 'name original path thumbnail smallFile').populate('coverPhoto', 'name original path thumbnail smallFile');
+        record.homeBanners   = await HomeBannerModel.find({status:1}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
         record.homeBenafits   = await HomeBenafitModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
-        record.homePartners    = await HomePartnerModel.find({status:1,type:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
-        record.testimonials = await TestimonialModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
+        record.homePartners    = await HomePartnerModel.find({status:1,type:1}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
+        record.testimonials = await TestimonialModel.find({status:1}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
         record.loadSlider    = await HomeLoadSliderModel.find({status:1}).sort({sort_order: -1}).populate('file', 'name original path thumbnail smallFile');
         record.blogList = await BlogModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile')
         .populate('thumbnail', 'name original path thumbnail smallFile');

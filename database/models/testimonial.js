@@ -4,7 +4,9 @@ const mongoose                  = require('mongoose');
 const objectId                  = mongoose.Schema.Types.ObjectId;
 
 const TestimonialSchema = new mongoose.Schema({ 
-    name: { type: String, required: true },
+    name: { type: String, required: false },
+    youtube: { type: String, required: false },
+    page: { type: String, required: false },
     designation: { type: String, required: false },
     files: { type: objectId, ref: 'File' },
     description: { type: String, required: false},

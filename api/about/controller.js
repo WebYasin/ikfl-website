@@ -36,6 +36,7 @@ const create = async (req, res, next) => {
             designation :Joi.string().empty(''),
             files: Joi.array(),
             description: Joi.string().empty(''),
+            fulldescription: Joi.string().empty(''),
             atitle: Joi.string().empty(''),
             adescription: Joi.string().empty(''),
             otitle: Joi.string().empty(''),
@@ -134,6 +135,7 @@ const update = async (req, res, next) => {
             designation :Joi.string().empty(''),
             files: Joi.array(),
             description: Joi.string().empty(''),
+            fulldescription: Joi.string().empty(''),
             atitle: Joi.string().empty(''),
             adescription: Joi.string().empty(''),
             otitle: Joi.string().empty(''),
@@ -657,6 +659,7 @@ const createCharges = async (req, res, next) => {
         const schema = Joi.object({
             name: Joi.string().required(),
             description: Joi.string().empty(''),
+            payment: Joi.string().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -708,6 +711,7 @@ const updateCharges = async (req, res, next) => {
         const schema = Joi.object({
             name: Joi.string().required(),
             description: Joi.string().empty(''),
+            payment: Joi.string().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),

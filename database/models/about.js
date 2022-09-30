@@ -9,6 +9,7 @@ const AboutSchema = new mongoose.Schema({
 
     designation: { type: String, required: false },
     description: { type: String,required: false, default: "" },
+    fulldescription: { type: String,required: false, default: "" },
     awtitle: { type: String, required: false },
     awdescription: { type: String, required: false },
     atitle: { type: String, required: false },

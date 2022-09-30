@@ -6,6 +6,7 @@ const objectId                  = mongoose.Schema.Types.ObjectId;
 const BlogSchema = new mongoose.Schema({
     title: { type: String, required: true },
     slug: { type: String, required: false, default: "" },
+    link: { type: String, required: false, default: "" },
     shortDescription: { type: String, required: false },
     description: { type: String,required: false, default: "" },
     show_latest: { type: Number,required: false, default: 0 },

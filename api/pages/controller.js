@@ -114,7 +114,7 @@ const getPageDetail = async (req, res, next) => {
         const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let where = {};
-        if (req.query._id) where.keyword = req.query.page;
+        if (req.query.page) where.keyword = req.query.page;
         let record = { };
         record.heading = await PageModel.find(where).sort({createdAt: -1});
         record.setting = await SettingModel.find().sort({ createdAt: -1 })

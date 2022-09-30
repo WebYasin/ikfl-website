@@ -8,6 +8,7 @@ const TeamSchema = new mongoose.Schema({
     designation: { type: String, required: false },
     file: { type: objectId, ref: 'File' },
     description: { type: String, required: false},
+    fulldescription: { type: String, required: false},
     link: { type: String, required: false},
     status: { type: Number, default: false },
     sort_order: { type: Number, default: false },
