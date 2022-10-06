@@ -124,6 +124,10 @@ const getCustomerSection = async (req, res, next) => {
         .populate('file', 'name original path thumbnail smallFile')
         .populate('blog', 'name original path thumbnail smallFile');
 
+        record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
+        .populate('attributes.attributeId', 'name')
+        .populate('file', 'name original path thumbnail smallFile')
+        .populate('blog', 'name original path thumbnail smallFile');
    
         record.downloadList = await DownloadModel.find({status:1}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile');
 
@@ -530,7 +534,7 @@ const getProudctDetail = async (req, res, next) => {
         delete query.limit;
         let record = { };
 
-        record.product    = await ProductModel.find({status:1, slug:req.params.id }).populate('file', 'name original path thumbnail smallFile').populate('blog', 'name original path thumbnail smallFile').populate('carcass', 'name original path thumbnail smallFile').populate('coverPhoto', 'name original path thumbnail smallFile');
+        record.product    = await ProductModel.find({status:1, slug:req.params.id }).populate('file', 'name original path thumbnail smallFile').populate('blog', 'name original path thumbnail smallFile').populate('eligible_img', 'name original path thumbnail smallFile').populate('insurance_img', 'name original path thumbnail smallFile');
     
         record.featureList = await ProductFeatureModel.find({status:1,product:record.product[0]._id}).sort({ sort_order: 1 }).populate('file', 'name original path thumbnail smallFile');
 

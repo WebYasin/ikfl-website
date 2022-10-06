@@ -8,5 +8,5 @@ router.post('/',           Auth.isAuthenticated(),       FaqController.create);
 router.get('/',                                          FaqController.get);
 router.put('/:id',         Auth.isAuthenticated(),       FaqController.update);
 router.delete('/:id',      Auth.isAuthenticated(),       FaqController.remove);
-
+router.get('/getFaq',                                    FaqController.getFaq);
 module.exports = router;

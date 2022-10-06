@@ -21,6 +21,7 @@ const create = async (req, res, next) => {
         const schema = Joi.object({
             title: Joi.string().required(),
             category: Joi.string().required(),
+            link: Joi.string().empty(''),
             files: Joi.array(),
             sort_order: Joi.number().empty(''),
             status: Joi.number().empty(''),
@@ -72,6 +73,7 @@ const update = async (req, res, next) => {
         const schema = Joi.object({
             title: Joi.string().required(),
             category: Joi.string().required(),
+            link: Joi.string().empty(''),
             files: Joi.array(),
             sort_order: Joi.number().empty(''),
             status: Joi.number().empty(''),
@@ -131,6 +133,7 @@ const createPolicyCategory = async (req, res, next) => {
         const schema = Joi.object({
             name: Joi.string().required(),
             description: Joi.string().empty(''),
+            showCustomer: Joi.number().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -182,6 +185,7 @@ const updatePolicyCategory = async (req, res, next) => {
         const schema = Joi.object({ 
             name: Joi.string().required(),
             description: Joi.string().empty(''),
+            showCustomer: Joi.number().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -585,7 +589,7 @@ const getPolicyData = async (req, res, next) => {
         // record.policyCategory = await PolicyCategoryModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile').populate('policy');
         
         record.policyCategory = await PolicyCategoryModel.aggregate([
-               
+            {"$match":{"status":1}},     
             { $lookup: {
                   from: "policies",
                   localField: "_id",
@@ -652,6 +656,18 @@ const getPolicyList = async (req, res, next) => {
 };
 
 
+const getCustomerPolicyCategory = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+
+        let docs = await PolicyCategoryModel.find({showCustomer:1}).sort({sort_order: 1}).limit(limit).skip(pagination*limit);
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
 
 ////////////////////////
 module.exports = {
@@ -677,5 +693,6 @@ module.exports = {
     removeFaqs,
     getPolicyData,
     getPolicyCategories,
-    getPolicyList
+    getPolicyList,
+    getCustomerPolicyCategory
 };

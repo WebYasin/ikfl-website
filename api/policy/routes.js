@@ -36,4 +36,5 @@ router.delete('/faqs/:id',      Auth.isAuthenticated(),       PolicyController.r
 router.get('/getData',                                         PolicyController.getPolicyData);
 router.get('/getPolicyCategory',                              PolicyController.getPolicyCategories);
 router.get('/getPolicyList',                              PolicyController.getPolicyList);
+router.get('/getCustomerPolicyCategory',                              PolicyController.getCustomerPolicyCategory);
 module.exports = router;

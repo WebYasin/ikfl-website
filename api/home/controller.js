@@ -425,7 +425,6 @@ const getHomeBanner = async (req, res, next) => {
 
 const createHomeBanner = async (req, res, next) => {
     let homebanner = await FILE_UPLOAD.uploadMultipleFile(req);
-    homebanner.status = req.status;
     
     try {
         const schema = Joi.object({
