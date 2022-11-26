@@ -2,7 +2,7 @@
 
 const modelName                 = 'Setting';
 const Joi                       = require('@hapi/joi');
-const { SettingModel,MetaModel }          = require('@database');
+const { SettingModel,MetaModel,StateModel }          = require('@database');
 const CONSTANT                  = require('@lib/constant');
 const UTILS                     = require('@lib/utils');
 const FILE_UPLOAD               = require('@lib/file_upload');
@@ -294,6 +294,113 @@ const removeMeta = async (req, res, next) => {
     }
 };
 
+///////////////////
+
+const createState = async (req, res, next) => {
+    let heading = await FILE_UPLOAD.uploadMultipleFile(req);
+
+    try {
+        const schema = Joi.object({
+            name: Joi.string().required(),
+            sort_order: Joi.number().empty(''),
+            status: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+    
+        const { error } = schema.validate(heading);
+        if (error) return res.status(400).json({ error });
+
+        if (heading.files.length) heading.file = heading.files.map(file => file._id);
+        else delete heading.files;
+
+        heading.createdBy = req.user._id;
+        heading.updatedBy = req.user._id;
+
+        heading = new StateModel(heading);
+        heading = await heading.save();
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: heading
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const getState = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        if (query.name) query.name = new RegExp(query.name, "i");
+        delete query.pagination;
+        delete query.limit;
+
+        let docs = await StateModel.find(query).sort({name: 1});
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const updateState = async (req, res, next) => {
+    
+    try {
+        if (!req.params.id) return res.status(400).json({error: "Meta id is required"});
+        let team = await FILE_UPLOAD.uploadMultipleFile(req);
+        const schema = Joi.object({ 
+            name: Joi.string().required(),
+            sort_order: Joi.number().empty(''),
+            status: Joi.number().empty(''),
+            files: Joi.array(),
+            customFields: Joi.object()
+        });
+
+        const { error } = schema.validate(req.body);
+        if (error) return res.status(400).json({ error });
+
+        if (team.files.length) team.file = team.files.map(file => file._id);
+        else delete team.files;
+        req.body.updatedBy = req.user._id;
+
+        team = await StateModel.updateOne({_id: req.params.id}, {$set: req.body});
+       
+        if (!team) return res.status(400).json({error: "Meta update failed"});
+        
+        return res.status(201).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "Meta updated succesfully"
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+const removeState = async (req, res, next) => {
+    try {
+        const schema = Joi.object({
+            id: Joi.string().required()
+        });
+
+        const { error } = schema.validate(req.params);
+        if (error) return res.status(400).json({ error });
+
+        await StateModel.deleteOne({_id: req.params.id});
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: "Meta Deleted succesfully" 
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+///////////////
+
+
+
 module.exports = {
     create,
     get,
@@ -302,5 +409,9 @@ module.exports = {
     createMeta,
     getMeta,
     updateMeta,
-    removeMeta
+    removeMeta,
+    createState,
+    getState,
+    updateState,
+    removeState
 };

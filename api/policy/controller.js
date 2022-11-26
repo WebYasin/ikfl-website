@@ -21,6 +21,7 @@ const create = async (req, res, next) => {
         const schema = Joi.object({
             title: Joi.string().required(),
             category: Joi.string().required(),
+            link: Joi.string().empty(''),
             files: Joi.array(),
             sort_order: Joi.number().empty(''),
             status: Joi.number().empty(''),
@@ -52,7 +53,7 @@ const create = async (req, res, next) => {
 
 const get = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         delete query.pagination;
@@ -72,6 +73,7 @@ const update = async (req, res, next) => {
         const schema = Joi.object({
             title: Joi.string().required(),
             category: Joi.string().required(),
+            link: Joi.string().empty(''),
             files: Joi.array(),
             sort_order: Joi.number().empty(''),
             status: Joi.number().empty(''),
@@ -131,6 +133,7 @@ const createPolicyCategory = async (req, res, next) => {
         const schema = Joi.object({
             name: Joi.string().required(),
             description: Joi.string().empty(''),
+            showCustomer: Joi.number().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -182,6 +185,7 @@ const updatePolicyCategory = async (req, res, next) => {
         const schema = Joi.object({ 
             name: Joi.string().required(),
             description: Joi.string().empty(''),
+            showCustomer: Joi.number().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -502,7 +506,7 @@ const createFaqs = async (req, res, next) => {
 
 const getFaqs = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         delete query.pagination;
@@ -575,7 +579,7 @@ const removeFaqs = async (req, res, next) => {
 
 const getPolicyData = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         delete query.pagination;
@@ -585,23 +589,25 @@ const getPolicyData = async (req, res, next) => {
         // record.policyCategory = await PolicyCategoryModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile').populate('policy');
         
         record.policyCategory = await PolicyCategoryModel.aggregate([
-               
+            {"$match":{"status":1}},     
             { $lookup: {
                   from: "policies",
                   localField: "_id",
                   foreignField: "category",
-                  as: "policyDetails"
-            }},
-        //    { "$unwind": "$policyDetails" },
-          { $skip: (pagination*limit) },
-          { $sort : { createdAt: -1} },
-          { $limit: limit },
+                  as: "policyDetails",                  
+            },                    
+        },
+        
+        //    { $file: "policyDetails" },
+        //   { $skip: (pagination*limit) },
+          { $sort : { sort_order: 1} },
+          
+        //   { $limit: limit },
          
-         ])
+         ]);    
 
         // record.policyList = await PolicyModel.find({status:1}).sort({sort_order: 1})
         // .populate('file', 'name original path thumbnail smallFile').populate('category','_id name');
-
 
       
         record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
@@ -615,6 +621,49 @@ const getPolicyData = async (req, res, next) => {
         .populate('favicon', 'name original path thumbnail smallFile')
         .populate('default_logo', 'name original path thumbnail smallFile');
         return res.status(200).send({ result: record });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
+
+const getPolicyCategories = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+
+        let docs = await PolicyCategoryModel.find({status:1}).sort({sort_order: 1}).limit(limit).skip(pagination*limit);
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
+
+const getPolicyList = async (req, res, next) => {
+    try {
+       
+        let query = req.query;
+            
+        let docs = await PolicyModel.find(query).sort({sort_order: 1}).populate('file','name original path thumbnail smallFile');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
+const getCustomerPolicyCategory = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+
+        let docs = await PolicyCategoryModel.find({showCustomer:1}).sort({sort_order: 1}).limit(limit).skip(pagination*limit);
+        return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
     }
@@ -642,5 +691,8 @@ module.exports = {
     createFaqs,
     updateFaqs,
     removeFaqs,
-    getPolicyData
+    getPolicyData,
+    getPolicyCategories,
+    getPolicyList,
+    getCustomerPolicyCategory
 };

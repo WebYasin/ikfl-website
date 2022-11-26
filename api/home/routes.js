@@ -36,7 +36,11 @@ router.delete('/loanSlider/:id',      Auth.isAuthenticated(),       HomeControll
 
 router.post('/sentOtp',                                             HomeController.sentOtp);
 router.post('/verifyOtp',                                           HomeController.verifyOtp);
+router.post('/sentMessage',                                         HomeController.sentMessage);
 
 
 
+router.post('/saveapply',                                             HomeController.saveapply);
+
+router.get('/getApplyData',                                          HomeController.getApplyData);
 module.exports = router;

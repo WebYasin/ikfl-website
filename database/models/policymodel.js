@@ -6,6 +6,7 @@ const objectId                  = mongoose.Schema.Types.ObjectId;
 const PolicySchema = new mongoose.Schema({ 
     title: { type: String, required: true },
     status: { type: Number, default: false },
+    link: { type: String, required: false,default: false },
     category: { type: objectId, ref: 'policy_category' },
     file: { type: objectId, ref: 'File' },
     sort_order: { type: Number, default: false },

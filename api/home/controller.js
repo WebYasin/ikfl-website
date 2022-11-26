@@ -16,6 +16,7 @@ const { HomeModel,
     MetaModel,
     VisionModel,
     TestimonialModel,
+    ApplyModel,
     OtpModel }                      = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
@@ -23,6 +24,11 @@ const FILE_UPLOAD                   = require('@lib/file_upload');
 const { result }                    = require('@hapi/joi/lib/base');
 const msg91                         = require("msg91-api")("343914ABecqB83V6bZ63199dfeP1");
 const moment                        = require('moment');
+const ejs                           = require('ejs');
+const fs                            = require('fs');
+const path                          = require('path');
+const mail                          = require('@lib/mailer');
+
 const create = async (req, res, next) => {
  
     let home = await FILE_UPLOAD.uploadMultipleFile(req);
@@ -82,11 +88,11 @@ const get = async (req, res, next) => {
         delete query.limit;
         let record = { };
         record.homeHeading       = await HomeModel.find({status:1}).sort({createdAt: -1}).populate('benafitImage', 'name original path thumbnail smallFile').populate('testimonialImage', 'name original path thumbnail smallFile');
-        record.products    = await ProductModel.find({status:1, show_home: 1}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile').populate('blog', 'name original path thumbnail smallFile').populate('carcass', 'name original path thumbnail smallFile').populate('coverPhoto', 'name original path thumbnail smallFile');
-        record.homeBanners   = await HomeBannerModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
+        record.products    = await ProductModel.find({status:1, show_home: 1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile').populate('blog', 'name original path thumbnail smallFile').populate('carcass', 'name original path thumbnail smallFile').populate('coverPhoto', 'name original path thumbnail smallFile');
+        record.homeBanners   = await HomeBannerModel.find({status:1}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
         record.homeBenafits   = await HomeBenafitModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
-        record.homePartners    = await HomePartnerModel.find({status:1,type:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
-        record.testimonials = await TestimonialModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
+        record.homePartners    = await HomePartnerModel.find({status:1,type:1}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
+        record.testimonials = await TestimonialModel.find({status:1}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
         record.loadSlider    = await HomeLoadSliderModel.find({status:1}).sort({sort_order: -1}).populate('file', 'name original path thumbnail smallFile');
         record.blogList = await BlogModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile')
         .populate('thumbnail', 'name original path thumbnail smallFile');
@@ -419,7 +425,6 @@ const getHomeBanner = async (req, res, next) => {
 
 const createHomeBanner = async (req, res, next) => {
     let homebanner = await FILE_UPLOAD.uploadMultipleFile(req);
-    homebanner.status = req.status;
     
     try {
         const schema = Joi.object({
@@ -534,7 +539,6 @@ const getParters = async (req, res, next) => {
 
 const createPartner = async (req, res, next) => {
     let homepartner = await FILE_UPLOAD.uploadMultipleFile(req);
-    homepartner.status = req.status;
     
     try {
         const schema = Joi.object({
@@ -623,10 +627,10 @@ const removePartner = async (req, res, next) => {
         const { error } = schema.validate(req.params);
         if (error) return res.status(400).json({ error });
 
-        await HomeBannerModel.deleteOne({ _id: req.params.id });
+        await HomePartnerModel.deleteOne({ _id: req.params.id });
         return res.status(200).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
-            result: "Home Benafits Deleted succesfully" 
+            result: "Partner Deleted succesfully" 
         });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
@@ -781,7 +785,7 @@ const sentOtp = async (req, res, next) => {
         otp = new OtpModel(otp);
         otp = await otp.save();
           msg91.sendSMS(args, function(err, response){
-              if(response.type == 'success') return res.status(200).send({result :"OTP sent successfully"})
+              if(response.type == 'success') return res.status(200).send({result :"OTP sent successfully",status: CONSTANT.REQUESTED_CODES.SUCCESS})
             
           });
           
@@ -808,7 +812,7 @@ const verifyOtp = async (req, res, next) => {
         if (otp.expiry < moment().valueOf()) return res.status(400).send({error: "OTP valid only for 10 minutes. Request for new OTP!"});
        
         await OtpModel.deleteOne({mobile: req.body.number});
-        return res.status(200).send({result :"OTP verify successfully", status: CONSTANT.REQUESTED_CODES.SUCCESS,})
+        return res.status(200).send({result :"OTP verify successfully", status: CONSTANT.REQUESTED_CODES.SUCCESS})
        
           
    
@@ -817,7 +821,124 @@ const verifyOtp = async (req, res, next) => {
     }
 }
 
+const sentMessage = async (req, res, next) => {
+    let sendOtp = req.body;
+    let randomNumber = await UTILS.getRandomNumber();
+    try {
+        const schema = Joi.object({
+            number: Joi.number().required(),
+        });
 
+        const { error } = schema.validate(sendOtp);
+        if (error) return res.status(400).json({ error });
+
+        var args = {
+            "flow_id": "63284651aa2eb70ea4747534",
+            "sender": "KISANT",
+            "mobiles": sendOtp.number, 
+            "name":"yasin",
+            "id":"abc",
+            "url":"websiteurl",
+            "short_url": 1
+          };
+          
+       
+        
+          msg91.sendSMS(args, function(err, response){
+              if(response.type == 'success') return res.status(200).send({result :"Message sent successfully",status: CONSTANT.REQUESTED_CODES.SUCCESS})
+            
+          });
+          
+          
+   
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+}
+
+
+/////////////////////////
+const saveapply = async (req, res, next) => {
+    let apply = await FILE_UPLOAD.uploadMultipleFile(req);
+    apply.active = true;
+    
+    try {
+        const schema = Joi.object({
+            firstName: Joi.string().required(),
+            LastName: Joi.string().required(),
+            mobile: Joi.number().required(),
+            email: Joi.string().required(),
+            addrress: Joi.string().empty(''),
+            state: Joi.string().required(''),
+            city: Joi.string().empty(''),
+            occupation: Joi.string().empty(''),
+            loanApplied: Joi.string().empty(''),
+            files: Joi.array(),
+            active: Joi.boolean(),
+            customFields: Joi.object()
+        });
+
+        const { error } = schema.validate(apply);
+        if (error) return res.status(400).json({ error });
+
+        let files = apply.files;
+        if (files.length) {
+            apply.files = files.filter(e => e.fieldName == 'file').map(file => file._id);
+        } else delete apply.files;
+        
+        apply = new ApplyModel(apply);
+        apply = await apply.save();
+
+        if(apply.firstName){
+            let enq = await ApplyModel.find({_id:apply._id}).populate('state', '_id name ').populate('loanApplied','_id name ');
+          
+            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/applyonline.ejs'), 'utf8')),
+            dataToCompile = {
+                firstName:enq[0].firstName,
+                LastName:enq[0].LastName,
+                mobile:enq[0].mobile,
+                email:enq[0].email,
+                addrress:enq[0].addrress,
+                state:enq[0].state.name,
+                city:enq[0].city,
+                occupation:enq[0].occupation,
+                product:enq[0].loanApplied.name,
+                               
+            };
+        
+        await mail.sendMail([process.env.ENQUIRY_MAIL], `You have new Apply Online Enquiry `, compiled(dataToCompile));
+        }
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: apply
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+}
+//////////////////////
+
+
+
+
+
+const getApplyData = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        delete query.pagination;
+        delete query.limit;
+        let docs = await ApplyModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        .populate('state', '_id name ').populate('loanApplied','_id name ');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+/////////
 module.exports = {
     create,
     get,
@@ -844,5 +965,8 @@ module.exports = {
     updateloanSlider,
     removeloanSlider,
     sentOtp,
-    verifyOtp
+    verifyOtp,
+    saveapply,
+    sentMessage,
+    getApplyData
 };

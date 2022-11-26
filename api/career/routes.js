@@ -36,4 +36,8 @@ router.delete('/heading/:id',      Auth.isAuthenticated(),       CareerControlle
 router.get('/getData',                                          CareerController.getCareerData);
 
 
+router.post('/create',                                          CareerController.CreateEnquiry);
+
+router.get('/getcareerenquiry',                                 CareerController.GetCareerEnquiry);
+
 module.exports = router;

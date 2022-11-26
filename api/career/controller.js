@@ -10,12 +10,16 @@ const {
     MetaModel,
     SettingModel,
     CenterModel,
+    CareerEnquiryModel,
     CareerHeadingModel
  }                 = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 const FILE_UPLOAD                   = require('@lib/file_upload');
-
+const ejs                           = require('ejs');
+const fs                            = require('fs');
+const path                          = require('path');
+const mail                          = require('@lib/mailer');
 
 const create = async (req, res, next) => {
     let career = await FILE_UPLOAD.uploadMultipleFile(req);
@@ -56,9 +60,94 @@ const create = async (req, res, next) => {
     }
 }
 
+
+
+
+
+
+const CreateEnquiry = async (req, res, next) => {
+    let career = await FILE_UPLOAD.uploadMultipleFile(req);
+    
+    try {
+        const schema = Joi.object({
+            name: Joi.string().required(),
+            email: Joi.string().empty(''),
+            files: Joi.array(),
+            phone: Joi.string().empty(''),
+            appliedFor: Joi.string().empty(''),
+            type: Joi.string().empty(''),
+            jobs: Joi.string().empty(''),
+            state: Joi.string().empty(''),
+            city: Joi.string().empty(''),
+            customFields: Joi.object()
+        });
+
+        const { error } = schema.validate(career);
+        if (error) return res.status(400).json({ error });
+
+     
+        if (career.files.length) career.file = career.files.map(file => file._id);
+        else delete career.files;
+        
+        career = new CareerEnquiryModel(career);
+        career = await career.save();
+
+
+        if(career.name){
+            let enq = await CareerEnquiryModel.find({_id:career._id}).populate('file', 'name original path thumbnail smallFile').populate('jobs','_id name').populate('state','_id name');
+          
+            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/careerenquiry.ejs'), 'utf8')),
+               
+                dataToCompile = {
+                    name:enq[0].name,
+                    email:enq[0].email,
+                    phone:enq[0].phone,
+                    ...(enq[0].jobs && {jobs:enq[0].jobs.name}),
+                    ...(career.appliedFor && {appliedFor:enq[0].appliedFor}),
+                    state:enq[0].state.name,
+                    city:enq[0].city,        
+                                   
+                };                                                        
+        
+        await mail.sendMail([process.env.CAREER_MAIL], `You have new Career Enquiry `, compiled(dataToCompile));
+        }
+
+
+
+
+        return res.status(200).send({
+            status: CONSTANT.REQUESTED_CODES.SUCCESS,
+            result: career
+        });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+}
+
+
+
+
+const GetCareerEnquiry = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let query = req.query;
+        delete query.pagination;
+        delete query.limit;
+        let docs = await CareerEnquiryModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        .populate('file', 'name original path thumbnail smallFile').populate('jobs','_id name').populate('state','_id name');
+        return res.status(200).send({ result: docs });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
+
+
+
 const get = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         delete query.pagination;
@@ -513,6 +602,10 @@ const getHeading = async (req, res, next) => {
     }
 };
 
+
+
+
+
 const updateHeading = async (req, res, next) => {
     try {
         if (!req.params.id) return res.status(400).json({ error: "Benafits id is required" });
@@ -584,16 +677,16 @@ const getCareerData = async (req, res, next) => {
         record.jobsList = await CareerModel.find({status:1}).sort({sort_order: 1})
         .populate('files', 'name original path thumbnail smallFile');
 
-        record.workingList = await WorkingModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        record.workingList = await WorkingModel.find({status:1}).sort({sort_order: 1}).limit(limit).skip(pagination*limit)
         .populate('file', 'name original path thumbnail smallFile');
         
-        record.heading = await CareerHeadingModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        record.heading = await CareerHeadingModel.find({status:1})
         .populate('file', 'name original path thumbnail smallFile');
 
-        record.employeeSpeakList = await EmployeeSpeakModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        record.employeeSpeakList = await EmployeeSpeakModel.find({status:1}).sort({sort_order: 1})
         .populate('file', 'name original path thumbnail smallFile');
 
-        record.benafitsList = await CareerBenafitModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit)
+        record.benafitsList = await CareerBenafitModel.find({status:1}).sort({sort_order: 1})
         .populate('file', 'name original path thumbnail smallFile');
 
         record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
@@ -636,5 +729,7 @@ module.exports = {
     getHeading,
     updateHeading,
     removeHeading,
-    getCareerData
+    getCareerData,
+    CreateEnquiry,
+    GetCareerEnquiry
 };

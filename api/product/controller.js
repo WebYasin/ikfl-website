@@ -77,11 +77,11 @@ const create = async (req, res, next) => {
 
 const get = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
-        const rating = req.query.rating;
         let query = req.query;
-        if (req.query.category) query['category'] = { $in: req.query.category.split(",") };
+        if(req.query.status) query.status = req.query.status;
+        // if (req.query.category) query['category'] = { $in: req.query.category.split(",") };
         // if (req.query.minPrice && req.query.maxPrice) query['price'] = {$gte: parseInt(req.query.minPrice), $lte: parseInt(req.query.maxPrice)};
         // if (query.search) {
         //     query['$or'] = [
@@ -93,23 +93,16 @@ const get = async (req, res, next) => {
         // delete query.search;
         delete query.pagination;
         delete query.limit;
-        // delete query.minPrice;
-        // delete query.maxPrice;
-
-
+  
         const productsCount = await ProductModel.countDocuments(query);
 
-        let docs = await ProductModel.find(query).sort({ createdAt: -1 })
+        let docs = await ProductModel.find(query).sort({ sort_order: 1 })
             .limit(limit).skip(pagination * limit)
-            .populate('attributes.attributeId', 'name')
             .populate('file', 'name original path thumbnail smallFile')
             .populate('blog', 'name original path thumbnail smallFile')
             .populate('banner_img', 'name original path thumbnail smallFile')
             .populate('eligible_img', 'name original path thumbnail smallFile')
-            .populate('insurance_img', 'name original path thumbnail smallFile')
-            .populate('category', '_id name')
-            .populate('subCategory', '_id name');
-
+            .populate('insurance_img', 'name original path thumbnail smallFile');
 
         return res.status(200).send({ result: docs, count: productsCount });
     } catch (error) {
@@ -131,12 +124,16 @@ const getCustomerSection = async (req, res, next) => {
         .populate('file', 'name original path thumbnail smallFile')
         .populate('blog', 'name original path thumbnail smallFile');
 
+        record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
+        .populate('attributes.attributeId', 'name')
+        .populate('file', 'name original path thumbnail smallFile')
+        .populate('blog', 'name original path thumbnail smallFile');
    
         record.downloadList = await DownloadModel.find({status:1}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile');
 
-        record.testimonials = await TestimonialModel.find({status:1}).sort({createdAt: -1}).populate('files', 'name original path thumbnail smallFile');
+        record.testimonials = await TestimonialModel.find({status:1}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
 
-        record.sheduleCharges = await ChargesModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile');
+        record.sheduleCharges = await ChargesModel.find({status:1}).sort({sort_order: 1});
       
         record.setting = await SettingModel.find(query).sort({ createdAt: -1 })
         .populate('logo', 'name original path thumbnail smallFile')
@@ -537,7 +534,7 @@ const getProudctDetail = async (req, res, next) => {
         delete query.limit;
         let record = { };
 
-        record.product    = await ProductModel.find({status:1, slug:req.params.id }).populate('file', 'name original path thumbnail smallFile').populate('blog', 'name original path thumbnail smallFile').populate('carcass', 'name original path thumbnail smallFile').populate('coverPhoto', 'name original path thumbnail smallFile');
+        record.product    = await ProductModel.find({status:1, slug:req.params.id }).populate('file', 'name original path thumbnail smallFile').populate('blog', 'name original path thumbnail smallFile').populate('eligible_img', 'name original path thumbnail smallFile').populate('insurance_img', 'name original path thumbnail smallFile');
     
         record.featureList = await ProductFeatureModel.find({status:1,product:record.product[0]._id}).sort({ sort_order: 1 }).populate('file', 'name original path thumbnail smallFile');
 

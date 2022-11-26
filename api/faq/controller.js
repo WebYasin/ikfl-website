@@ -49,7 +49,7 @@ const get = async (req, res, next) => {
                   as: "faqDetails"
             }},
           { $skip: (pagination*limit) },
-          { $sort : { createdAt: -1} },
+          { $sort : { sort_order: 1} },
           { $limit: limit },
          
          ])
@@ -75,6 +75,51 @@ const get = async (req, res, next) => {
         return res.status(400).json(UTILS.errorHandler(error));
     }
 };
+
+const getFaq = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
+        let record = {};
+
+         record.faqCategory = await FaqCategoryModel.aggregate([
+            {"$match":{"status":1}},   
+            { $lookup: {
+                  from: "faqs",
+                  localField: "_id",
+                  foreignField: "category",
+                  as: "faqDetails"
+            }},
+            
+          { $skip: (pagination*limit) },
+          { $sort : { sort_order: 1} },
+      
+          { $limit: limit },
+         
+         ])
+        
+        
+         record.lifeinsurance = await CenterModel.find({status:1}).sort({ createdAt: -1 })
+         .populate('attributes.attributeId', 'name')
+         .populate('file', 'name original path thumbnail smallFile')
+         .populate('blog', 'name original path thumbnail smallFile');
+       
+       
+         record.meta = await MetaModel.find({status:1,link:'faq'}).populate('file', 'name original path thumbnail smallFile');
+      
+         record.setting = await SettingModel.find()
+         .populate('logo', 'name original path thumbnail smallFile')
+         .populate('footer_logo', 'name original path thumbnail smallFile')
+         .populate('favicon', 'name original path thumbnail smallFile')
+         .populate('default_logo', 'name original path thumbnail smallFile');
+      
+      
+         return res.status(200).send({ result: record });
+    } catch (error) {
+        return res.status(400).json(UTILS.errorHandler(error));
+    }
+};
+
 
 const update = async (req, res, next) => {
     try {
@@ -122,5 +167,6 @@ module.exports = {
     create,
     get,
     update,
-    remove
+    remove,
+    getFaq
 };

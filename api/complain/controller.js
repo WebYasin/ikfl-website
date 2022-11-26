@@ -2,11 +2,17 @@
 
 const modelName                     = 'ContactEnquiry';
 const Joi                           = require('@hapi/joi');
-const { ComplainModel   }       = require('@database');
+const { ComplainModel,ComplainStatus   }       = require('@database');
 const CONSTANT                      = require('@lib/constant');
 const UTILS                         = require('@lib/utils');
 const FILE_UPLOAD               = require('@lib/file_upload');
 const ObjectId                  = require('mongodb').ObjectId;
+const ejs                       = require('ejs');
+const fs                        = require('fs');
+const path                      = require('path');
+const moment                    = require('moment');
+const mail                      = require('@lib/mailer');
+const msg91                         = require("msg91-api")("343914ABecqB83V6bZ63199dfeP1");
 
 const create = async (req, res, next) => {
     let enquiry = req.body || {};
@@ -14,11 +20,15 @@ const create = async (req, res, next) => {
     enquiry.status = 'pending';
     try {
         const schema = Joi.object({
-            loanappid: Joi.string().required(),
+            loanappid: Joi.string(),
             name: Joi.string().required(),
             phone: Joi.string().required(),
             email: Joi.string().email().required(),
             concern: Joi.string().empty(''),
+            address:Joi.string().trim(),
+            state:Joi.string().trim(),
+            pin:Joi.string().trim(),
+            type:Joi.string().required(),
             status: Joi.string().empty(''),
             active: Joi.number().empty(''),
             files: Joi.array()
@@ -30,11 +40,59 @@ const create = async (req, res, next) => {
         
         enquiry = new ComplainModel(enquiry);
         enquiry = await enquiry.save();
+          
+        if (enquiry.email || process.env.ADMIN_MAIL) {
+         
+            let compiled = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/complainMail.ejs'), 'utf8')),      
+                dataToCompile = {
+                    loanappid:enquiry.loanappid,
+                    email: enquiry.email,
+                    phone:enquiry.phone,
+                    concern:enquiry.concern,
+                    userName: enquiry.name,
+                    address:enquiry.address,
+                    state:enquiry.state,
+                    pin:enquiry.pin,
+                };
 
-        return res.status(200).send({
-            status: CONSTANT.REQUESTED_CODES.SUCCESS,
-            result: enquiry
-        });
+            await mail.sendMail([process.env.ADMIN_MAIL], `You have new complain #${enquiry.complainId}`, compiled(dataToCompile));
+            if(enquiry.email){
+            let complainMailCustomer = ejs.compile(fs.readFileSync(path.resolve(__dirname, '../../docs/email_templates/complainMailCustomer.ejs'), 'utf8')),
+                dataToCompile = {
+                    loanappid:enquiry.loanappid,
+                    email: enquiry.email,
+                    phone:enquiry.phone,
+                    concern:enquiry.concern,
+                    userName: enquiry.name,
+                    address:enquiry.address,
+                    state:enquiry.state,
+                    pin:enquiry.pin,
+                };
+
+            await mail.sendMail([enquiry.email], `Your Interaction with Kisan Finance | ID#${enquiry.complainId}`, complainMailCustomer(dataToCompile));
+                }
+        }
+
+        var args = {
+            "flow_id": "63284651aa2eb70ea4747534",
+            "sender": "KISANT",
+            "mobiles": enquiry.phone, 
+            "name":enquiry.name,
+            "id":enquiry.complainId,
+            "url":process.env.WEBSITE_URL,
+            "short_url": 1
+          };
+       
+          msg91.sendSMS(args, function(err, response){
+            return res.status(200).send({
+                status: CONSTANT.REQUESTED_CODES.SUCCESS,
+                result: enquiry
+            });
+            
+          });
+          
+
+       
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
     }
@@ -42,14 +100,15 @@ const create = async (req, res, next) => {
 
 const get = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let where = {};
-        if (req.query.id) where._id = req.query.id;
-     
-        let docs = await ComplainModel.find(where).sort({createdAt: -1}).limit(limit).skip(pagination*limit);
-       
-        return res.status(200).send({ result: docs,where: req.query.id });
+        if (req.query._id) where._id = req.query._id;
+        let record ={ };
+         record.complain = await ComplainModel.find(where).sort({createdAt: -1}).limit(limit).skip(pagination*limit);
+         record.history = await ComplainStatus.find({complainId: {$in :record.complain.map(e => new RegExp(e._id,'i'))}}).sort({createdAt: -1});
+        
+        return res.status(200).send({ result: record ,status: CONSTANT.REQUESTED_CODES.SUCCESS,});
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
     }
@@ -60,10 +119,14 @@ const update = async (req, res, next) => {
         if (!req.params.id) return res.status(400).json({ error: "complain id is required" });
         let about = await FILE_UPLOAD.uploadMultipleFile(req);
         const schema = Joi.object({
-            loanappid: Joi.string().required(),
+            loanappid: Joi.string(),
             name: Joi.string().required(),
             phone: Joi.string().required(),
             email: Joi.string().email().required(),
+            address:Joi.string().trim(),
+            state:Joi.string().trim(),
+            pin:Joi.string().trim(),
+            type:Joi.string().required(),
             concern: Joi.string().empty(''),
             status: Joi.string().empty(''),
             active: Joi.number().empty(''),
@@ -78,6 +141,22 @@ const update = async (req, res, next) => {
      
         let aboutData = await ComplainModel.updateOne({ _id: req.params.id }, {$set: req.body});
        
+        let cmtstatus = '';
+        if(aboutData){
+
+            cmtstatus = {
+                "complainId":req.params.id,
+                "status":req.body.status,
+                "comment":req.body.concern
+            }
+                     
+           cmtstatus = new ComplainStatus(cmtstatus);
+           cmtstatus = await cmtstatus.save();
+
+        }
+
+        if (!cmtstatus) return res.status(400).json({ error: "complain status update failed" });
+
         if (!aboutData) return res.status(400).json({ error: "complain update failed" });
         return res.status(201).send({
             status: CONSTANT.REQUESTED_CODES.SUCCESS,
@@ -115,12 +194,15 @@ const CheckStatus = async (req, res, next) => {
         const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let where = {};
-        if (req.query.id) where.loanappid = req.query.id;
-     
-        let docs = await ComplainModel.find(where).limit(1);
-        return res.status(200).send({ result: docs });
+        if (req.params.id) where.complainId = req.params.id;
+        let record ={ };
+            
+         record.complain = await ComplainModel.find(where).limit(1);
+         record.history = await ComplainStatus.find({complainId: {$in :record.complain.map(e => new RegExp(e._id,'i'))}}).sort({createdAt: -1});
+        
+        return res.status(200).send({ result: record ,status: CONSTANT.REQUESTED_CODES.SUCCESS,});
     } catch (error) {
-        return res.status(400).json(UTILS.errorHandler(error));
+        return res.status(400).json(UsTILS.errorHandler(error));
     }
 };
 
@@ -154,9 +236,9 @@ const req = http.request(options, function (res) {
   });
 });
 
-let mobile = req.query.mobile;
+// let mobile = req.query.mobile;
 
-req.write(`{\n  \"flow_id\": \"6319a189aed1b13a913072a6\",\n  \"sender\": \"KISANT\",\n  \"short_url\": \"1\",\n  \"mobiles\": \"${mobile}\",\n  \"OTP\": \"878765\"\n  \n}`);
+req.write(`{\n  \"flow_id\": \"6319a189aed1b13a913072a6\",\n  \"sender\": \"KISANT\",\n  \"short_url\": \"1\",\n  \"mobiles\": \"918800250794\",\n  \"OTP\": \"878765\"\n  \n}`);
 req.end();
 
 

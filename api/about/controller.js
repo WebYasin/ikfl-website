@@ -36,6 +36,7 @@ const create = async (req, res, next) => {
             designation :Joi.string().empty(''),
             files: Joi.array(),
             description: Joi.string().empty(''),
+            fulldescription: Joi.string().empty(''),
             atitle: Joi.string().empty(''),
             adescription: Joi.string().empty(''),
             otitle: Joi.string().empty(''),
@@ -94,8 +95,8 @@ const get = async (req, res, next) => {
         .populate('file', 'name original path thumbnail smallFile')
         .populate('blog', 'name original path thumbnail smallFile');
        
-        record.directorList     = await TeamModel.find({status:1,type:1}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile');
-        record.teamList     = await TeamModel.find({status:1,type:2}).sort({createdAt: -1}).populate('file', 'name original path thumbnail smallFile');
+        record.directorList     = await TeamModel.find({status:1,type:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile');
+        record.teamList     = await TeamModel.find({status:1,type:2}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile');
 
         record.visionList   = await VisionModel.find({status:1,show_value:0}).sort({sort_order: 1}).populate('files', 'name original path thumbnail smallFile');
 
@@ -134,6 +135,7 @@ const update = async (req, res, next) => {
             designation :Joi.string().empty(''),
             files: Joi.array(),
             description: Joi.string().empty(''),
+            fulldescription: Joi.string().empty(''),
             atitle: Joi.string().empty(''),
             adescription: Joi.string().empty(''),
             otitle: Joi.string().empty(''),
@@ -422,6 +424,7 @@ const createAddress = async (req, res, next) => {
             location: Joi.string().required(),
             title: Joi.string().required(),
             description: Joi.string().empty(''),
+            link: Joi.string().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -451,7 +454,7 @@ const createAddress = async (req, res, next) => {
 
 const getAddress = async (req, res, next) => {
     try {
-        const limit = parseInt(req.query && req.query.limit ? req.query.limit : 10);
+        const limit = parseInt(req.query && req.query.limit ? req.query.limit : '');
         const pagination = parseInt(req.query && req.query.pagination ? req.query.pagination : 0);
         let query = req.query;
         if (query.name) query.name = new RegExp(query.name, "i");
@@ -474,6 +477,7 @@ const updateAddress = async (req, res, next) => {
             location: Joi.string().required(),
             title: Joi.string().required(),
             description: Joi.string().empty(''),
+            link: Joi.string().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -655,6 +659,7 @@ const createCharges = async (req, res, next) => {
         const schema = Joi.object({
             name: Joi.string().required(),
             description: Joi.string().empty(''),
+            payment: Joi.string().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -691,7 +696,7 @@ const getCharges = async (req, res, next) => {
         delete query.pagination;
         delete query.limit;
 
-        let docs = await ChargesModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile');
+        let docs = await ChargesModel.find(query).sort({createdAt: 1});
         return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
@@ -706,6 +711,7 @@ const updateCharges = async (req, res, next) => {
         const schema = Joi.object({
             name: Joi.string().required(),
             description: Joi.string().empty(''),
+            payment: Joi.string().empty(''),
             status: Joi.number().empty(''),
             sort_order: Joi.number().empty(''),
             files: Joi.array(),
@@ -1105,7 +1111,9 @@ const getInformationDetail = async (req, res, next) => {
        
         record.annualReports = await AnnualReportModel.find({status:1}).sort({sort_order: 1}).populate('file', 'name original path thumbnail smallFile').populate('year','id_ name');
       
-        record.quaterlyList = await QuaterlyReportModel.find({status:1}).populate('q1', 'name original path thumbnail smallFile').populate('q2', 'name original path thumbnail smallFile').populate('q3', 'name original path thumbnail smallFile').populate('q4', 'name original path thumbnail smallFile').populate('year','id_ name');
+        record.quaterlyList = await QuaterlyReportModel.find({status:1}).populate('file', 'name original path thumbnail smallFile').populate('year','id_ name');
+
+        record.investorPresentationList = await InvestorPresentationModel.find({status:1}).sort({sort_order: 1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile').populate('year','_id name');
 
         record.lifeinsurance = await CenterModel.find(query).sort({ createdAt: -1 })
         .populate('attributes.attributeId', 'name')
@@ -1163,9 +1171,10 @@ const createQuaterly = async (req, res, next) => {
     let info = await FILE_UPLOAD.uploadMultipleFile(req);
 
     try {
-        const schema = Joi.object({
-         
+        const schema = Joi.object({            
             year: Joi.string().required(),
+            name: Joi.string().required(),
+            sort_order: Joi.number().empty(''),
             status: Joi.number().empty(''),
             files: Joi.array(),
             customFields: Joi.object()
@@ -1174,14 +1183,8 @@ const createQuaterly = async (req, res, next) => {
         const { error } = schema.validate(info);
         if (error) return res.status(400).json({ error });
 
-        let files = info.files;
-        if (files.length) {
-            info.q1 = files.filter(e => e.fieldName == 'file').map(file => file._id);
-            info.q2 = files.filter(e => e.fieldName == 'blog').map(file => file._id);
-            info.q3 = files.filter(e => e.fieldName == 'coverPhoto').map(file => file._id);
-            info.q4 = files.filter(e => e.fieldName == 'carcass').map(file => file._id);
-        } else delete info.files;
- 
+        if (info.files.length) info.file = info.files.map(file => file._id);
+        else delete info.files;
 
         info.createdBy = req.user._id;
         info.updatedBy = req.user._id;
@@ -1207,7 +1210,7 @@ const getQuaterly = async (req, res, next) => {
         delete query.pagination;
         delete query.limit;
 
-        let docs = await QuaterlyReportModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('q1', 'name original path thumbnail smallFile').populate('q2', 'name original path thumbnail smallFile').populate('q3', 'name original path thumbnail smallFile').populate('q4', 'name original path thumbnail smallFile').populate('year','id_ name');
+        let docs = await QuaterlyReportModel.find(query).sort({createdAt: -1}).limit(limit).skip(pagination*limit).populate('file', 'name original path thumbnail smallFile').populate('year','_id name');
         return res.status(200).send({ result: docs });
     } catch (error) {
         return res.status(400).json(UTILS.errorHandler(error));
@@ -1221,6 +1224,8 @@ const updateQuaterly = async (req, res, next) => {
         let info = await FILE_UPLOAD.uploadMultipleFile(req);
         const schema = Joi.object({
             year: Joi.string().required(),
+            name: Joi.string().required(),
+            sort_order: Joi.number().empty(''),
             status: Joi.number().empty(''),
             files: Joi.array(),
             customFields: Joi.object()
@@ -1228,27 +1233,14 @@ const updateQuaterly = async (req, res, next) => {
 
         const { error } = schema.validate(req.body);
         if (error) return res.status(400).json({ error });
+     
 
-       
-
-        let files = info.files;
-        if (files.length) {
-            info.q1 = files.filter(e => e.fieldName == 'file').map(file => file._id);
-            info.q2 = files.filter(e => e.fieldName == 'blog').map(file => file._id);
-            info.q3 = files.filter(e => e.fieldName == 'coverPhoto').map(file => file._id);
-            info.q4 = files.filter(e => e.fieldName == 'carcass').map(file => file._id);
-        } else delete info.files;
-       
-        if(info.q1 && info.q1.length < 1) delete info.q1;
-        if(info.q2 && info.q2.length < 1) delete info.q2;
-        if(info.q3 && info.q3.length < 1) delete info.q3;
-        if(info.q4 && info.q4.length < 1) delete info.q4;
-
-
+        if (info.files.length) info.file = info.files.map(file => file._id);
+        else delete info.files;
         req.body.updatedBy = req.user._id;
 
         info = await QuaterlyReportModel.updateOne({_id: req.params.id}, {$set: req.body});
-       
+                   
         if (!info) return res.status(400).json({error: "Quaterly update failed"});
         
         return res.status(201).send({

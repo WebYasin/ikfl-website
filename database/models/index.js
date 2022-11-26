@@ -55,5 +55,12 @@ module.exports = {
     QuaterlyReportModel:                require('./quaterlyreportmodel'),
     FinancialYearModel:                 require('./financialyearmodel'),
     InvestorPresentationModel:          require('./investorpresentationmodel'),
-    ComplainModel:                      require('./complainmodel')
+    ComplainModel:                      require('./complainmodel'),
+    PaymentModel:                       require('./paymentmodel'),
+    ComplainStatus:                     require('./complainquerystatus'),
+    CareerEnquiryModel:                 require('./careerenquirymodle'),
+    StateModel:                         require('./statemodel'),
+    ApplyModel:                         require('./applymodel'),
+    CallEnquiryModel:                   require('./callenquirymodel'),
+    PageModel:                          require('./pagemodel')
 }
